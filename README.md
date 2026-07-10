@@ -19,10 +19,9 @@ ChangeList:
   <tr>
 <td>
 
-
 <b>Populr Movies Screen</b>
 <img width="1080" height="2232" alt="popular" src="https://github.com/user-attachments/assets/46ba5644-9ca6-4173-b0e1-ec832ead9b26" />
-" />
+
 </td>
 
 ##
