@@ -16,19 +16,22 @@ ChangeList:
 - below are two images
 
 <table>
+  <!-- Row 1: Titles -->
   <tr>
-<td>
-
-<b>Populr Movies Screen</b>
-<img width="1080" height="2232" alt="popular" src="https://github.com/user-attachments/assets/46ba5644-9ca6-4173-b0e1-ec832ead9b26" />
-
-</td>
-
-##
-<td> 
-  <b>Top rated movies Screen</b>
-  <img width="1080" height="2232" alt="Top_Rated" src="https://github.com/user-attachments/assets/4e4098e6-022c-47db-8bb0-53a9e1c58e43" />
-
-  </td>
+    <td align="center" valign="bottom">
+      <b>Popular Movies Screen</b>
+    </td>
+    <td align="center" valign="bottom">
+      <b>Top rated movies Screen</b>
+    </td>
+  </tr>
+  <!-- Row 2: Images -->
+  <tr>
+    <td valign="top">
+      <img width="1080" height="2232" alt="popular" src="https://github.com/user-attachments/assets/46ba5644-9ca6-4173-b0e1-ec832ead9b26" />
+    </td>
+    <td valign="top">
+      <img width="1080" height="2232" alt="Top_Rated" src="https://github.com/user-attachments/assets/4e4098e6-022c-47db-8bb0-53a9e1c58e43" />
+    </td>
   </tr>
 </table>
