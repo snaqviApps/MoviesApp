@@ -20,16 +20,16 @@ ChangeList:
 <td>
 
 
-
-
-<b>Empty Screen</b>
-<img alt="Popular Movies" src="![popular.jpg](../../../../Downloads/popular.jpg)" />
+<b>Populr Movies Screen</b>
+<img width="1080" height="2232" alt="popular" src="https://github.com/user-attachments/assets/46ba5644-9ca6-4173-b0e1-ec832ead9b26" />
+" />
 </td>
 
 ##
 <td> 
-  <b>Error Screen</b>
-    <img alt="Top Rated Movies" src="![Top_Rated.jpg](../../../../Downloads/Top_Rated.jpg)" />
+  <b>Top rated movies Screen</b>
+  <img width="1080" height="2232" alt="Top_Rated" src="https://github.com/user-attachments/assets/4e4098e6-022c-47db-8bb0-53a9e1c58e43" />
+
   </td>
   </tr>
 </table>
