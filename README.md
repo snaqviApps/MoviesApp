@@ -13,3 +13,23 @@ ChangeList:
 - Add a `MoviesRepository` and `MovieViewModel` to handle data operations and UI state management via `StateFlow`.
 - Create a reactive UI using Compose and Material 3, including `MoviesScreen` for state handling and `MovieCard` for displaying results with Coil image loading.
 - Configure app permissions and theme settings, including dynamic color support and custom typography.
+- below are two images
+
+<table>
+  <tr>
+<td>
+
+
+
+
+<b>Empty Screen</b>
+<img alt="Popular Movies" src="![popular.jpg](../../../../Downloads/popular.jpg)" />
+</td>
+
+##
+<td> 
+  <b>Error Screen</b>
+    <img alt="Top Rated Movies" src="![Top_Rated.jpg](../../../../Downloads/Top_Rated.jpg)" />
+  </td>
+  </tr>
+</table>
