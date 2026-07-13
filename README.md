@@ -15,6 +15,15 @@ ChangeList:
 - Configure app permissions and theme settings, including dynamic color support and custom typography.
 - below are two images
 
+--------------------------
+<b>Branch: additional-advanced</b>
+  [Commit: bfe9cd6]
+- displays the winner-job, and in turn cancels the other one
+
+--------------------------
+
+
+
 <table>
   <!-- Row 1: Titles -->
   <tr>
