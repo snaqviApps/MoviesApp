@@ -14,12 +14,14 @@ interface MoviesService {
     suspend fun getMovies(
         @Url endPoint: String = "popular",
         @Query("api_key") apiKey: String,
+        @Query("page") page: Int = 1
     ): Response<Movies>
 }
 
 object RetrofitObject {
     val api : MoviesService = Retrofit
         .Builder()
+        .addConverterFactory(GsonConverterFactory.create())
         .baseUrl("https://api.themoviedb.org/3/movie/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()

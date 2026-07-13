@@ -49,6 +49,11 @@ android {
 
 dependencies {
     implementation(libs.androidx.compose.foundation)
+
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
     // Nav3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)

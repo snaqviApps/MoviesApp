@@ -9,7 +9,8 @@ import retrofit2.Response
 class MoviesRepository: MoviesService {
     override suspend fun getMovies(
         endPoint: String,
-        apiKey: String
+        apiKey: String,
+        page: Int
     ): Response<Movies> {
         Log.d("endPoint_repo", "endPoint_repo: $endPoint")
         return RetrofitObject
