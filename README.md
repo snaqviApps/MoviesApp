@@ -17,8 +17,13 @@ ChangeList:
 
 --------------------------
 <b>Branch: additional-advanced</b>
-  [Commit: bfe9cd6]
+  [commit: bfe9cd6]
 - displays the winner-job, and in turn cancels the other one
+
+  [commit: ab9128b2]
+- MainActivity.kt - Verified permission request logic.
+- MoviesViewModel.kt - Verified explicit intent and action setting.
+- MovieBroadcastReceiver.kt - Verified channel reset and high priority settings.
 
 --------------------------
 
