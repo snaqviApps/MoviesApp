@@ -1,36 +1,51 @@
 package edu.review.moviesappreview.presentation.screen
 
-import androidx.compose.foundation.background
+import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
+
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.review.moviesappreview.data.remote.MoviesRepository
+
 import edu.review.moviesappreview.presentation.MovieUIState
-import edu.review.moviesappreview.presentation.MovieViewModel
+import edu.review.moviesappreview.presentation.MoviesViewModel
 
 @Composable
 fun MoviesScreen(
-    // FIX 1: Pass the screen-level modifier to the root component where it belongs
-    modifier: Modifier = Modifier,
-    viewModel: MovieViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
+    // 1. Grab the application context safely inside the Composable body first
+    val appContext: Application = LocalContext.current.applicationContext as Application
+
+    val viewModel: MoviesViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MoviesViewModel(
+                    application = appContext,
+                    moviesRepository = MoviesRepository()
+                ) as T
+            }
+        }
+    )
+
     val moviesState by viewModel.moviesState.collectAsStateWithLifecycle()
 
     LoadMovieScreen(
         modifier = modifier.fillMaxSize(),
-        state = moviesState,
         onMovieView = {
             when (val mState = moviesState) {
                 is MovieUIState.Success -> {

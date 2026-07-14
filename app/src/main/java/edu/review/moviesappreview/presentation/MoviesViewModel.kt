@@ -1,5 +1,7 @@
 package edu.review.moviesappreview.presentation
 
+import android.app.Application
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,8 +19,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException // FIXED: Correct import path
 
-class MovieViewModel(
-    private val movieRepository: MoviesRepository = MoviesRepository()
+class MoviesViewModel(
+    private val application: Application,
+    private val moviesRepository: MoviesRepository = MoviesRepository()
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)
     val moviesState: StateFlow<MovieUIState> = _moviesState.asStateFlow()
@@ -42,7 +45,7 @@ class MovieViewModel(
             if (!showMovies) return@launch
 
             // References to keep track of both sibling jobs
-            var jobPopular: Job? //  initialized, when assigned to 'launch'
+            var jobPopular: Job?                            //  initialized, when assigned to 'launch'
             var jobTopRated: Job? = null
 
             // Capture the exact baseline start time
@@ -50,7 +53,7 @@ class MovieViewModel(
 
             jobPopular = launch(start = CoroutineStart.LAZY) {
                 try {
-                    val popularMovies = movieRepository.getMovies(endPoint, API_KEY, 5)
+                    val popularMovies = moviesRepository.getMovies(endPoint, API_KEY, 5)
                     if (popularMovies.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
@@ -65,6 +68,8 @@ class MovieViewModel(
                             currentEndPoint = endPoint
                             MovieUIState.Success(popularMovies.body()?.results ?: emptyList(), endPoint)
                         }
+                        sendWinnerBroadcast(application, endPoint)
+
                     }
                 } catch (e: Exception) {
 
@@ -81,7 +86,7 @@ class MovieViewModel(
 
                 val endPointTopRated = "top_rated"
                 try {
-                    val topRatedMovies = movieRepository.getMovies(endPointTopRated, API_KEY, 5)
+                    val topRatedMovies = moviesRepository.getMovies(endPointTopRated, API_KEY, 5)
                     if (topRatedMovies.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
@@ -96,6 +101,8 @@ class MovieViewModel(
                             currentEndPoint = endPointTopRated
                             MovieUIState.Success(topRatedMovies.body()?.results ?: emptyList(), endPointTopRated)
                         }
+                        sendWinnerBroadcast(application, endPointTopRated)
+
                     }
 
                 } catch (e: Exception) {
@@ -113,8 +120,15 @@ class MovieViewModel(
             // Now we pull the trigger on both at the exact same instant!
             jobPopular.start()
             jobTopRated.start()
-
         }
+    }
+
+    private fun sendWinnerBroadcast(appContext: Application, winnerEndPoint: String) {
+        val broadcastIntent = Intent(appContext, MovieBroadcastReceiver::class.java).apply {
+            action = MovieBroadcastReceiver.ACTION_RACE_COMPLETE
+            putExtra(MovieBroadcastReceiver.EXTRA_WINNER, winnerEndPoint)
+        }
+        appContext.sendBroadcast(broadcastIntent)
     }
 
     fun enableMoviesDataFetching(endPoint: String): String {
@@ -124,7 +138,6 @@ class MovieViewModel(
             isLoading = false
             fetchPopularOrTopRatedMovies(endPoint)
         }
-
         return endPoint
     }
 

@@ -1,6 +1,5 @@
 package edu.review.moviesappreview.presentation.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,14 +10,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.review.moviesappreview.presentation.MovieUIState
-import edu.review.moviesappreview.presentation.MovieViewModel
+import edu.review.moviesappreview.presentation.MoviesViewModel
 
 @Composable
 fun LoadMovieScreen(
     modifier: Modifier = Modifier,
-    state: MovieUIState,
     onMovieView: @Composable (isPopular: Boolean) -> Unit,
-    viewModel: MovieViewModel,
+    viewModel: MoviesViewModel,
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -83,7 +81,6 @@ fun LoadMovieScreen(
 @Composable
 fun LoadMovieScreenPreview() {
     LoadMovieScreen(
-        state = MovieUIState.Loading,
         onMovieView = { Text("Popular") },
         viewModel = viewModel(),
     )
