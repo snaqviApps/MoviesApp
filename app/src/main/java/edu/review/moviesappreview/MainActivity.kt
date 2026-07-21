@@ -1,12 +1,11 @@
 package edu.review.moviesappreview
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -14,41 +13,59 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import edu.review.moviesappreview.presentation.screen.MoviesScreen
+import edu.review.moviesappreview.presentation.screen.PowerStatusScreen
 import edu.review.moviesappreview.ui.theme.MoviesAppReviewTheme
+import edu.review.moviesappreview.util.checkAndRequestNotificationPermission
 
 class MainActivity : ComponentActivity() {
+
+    val nameIn by lazy { localClassName }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.i("Permission: ", "Granted")
+        } else {
+            Log.i("Permission: ", "Denied")
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Inside onCreate, after enableEdgeToEdge()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS) !=
-                PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
-            }
-        }
+
+        // PHASE 1: Run OS/Activity Level Setup
+        checkAndRequestNotificationPermission(
+            this,
+            requestPermissionLauncher = requestPermissionLauncher
+        )
+
+        // PHASE 2: Run Compose UI Level Setup
         setContent {
             MoviesAppReviewTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.LightGray
                 ) { innerPadding ->
-                   MoviesScreen(
-                       modifier = Modifier
-                           .fillMaxSize()
-                           .padding(innerPadding)
-                   )
+
+                    // PowerStatusScreen lives here safely inside the Compose tree.
+                    // Because it has no visible layout (it only contains the DisposableEffect),
+                    // it sits here invisibly acting as your background listener.
+                    PowerStatusScreen()
+
+                    MoviesScreen(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    )
                 }
             }
         }
     }
+
 }
 
 
@@ -56,8 +73,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     MoviesAppReviewTheme {
-       MoviesScreen(
-           modifier = Modifier
-       )
+        MoviesScreen(
+            modifier = Modifier
+        )
     }
 }

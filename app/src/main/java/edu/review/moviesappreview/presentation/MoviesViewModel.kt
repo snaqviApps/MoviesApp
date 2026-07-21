@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.review.moviesappreview.BuildConfig.API_KEY
 import edu.review.moviesappreview.data.remote.MoviesRepository
+import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +33,6 @@ class MoviesViewModel(
     var currentEndPoint by mutableStateOf("popular")
         private set
 
-
     init {
         enableMoviesDataFetching(currentEndPoint)
     }
@@ -41,11 +41,10 @@ class MoviesViewModel(
         _moviesState.value = MovieUIState.Loading
 
         viewModelScope.launch {
-
             if (!showMovies) return@launch
 
             // References to keep track of both sibling jobs
-            var jobPopular: Job?                            //  initialized, when assigned to 'launch'
+            var jobPopular: Job?            //  initialized, when assigned to 'launch'
             var jobTopRated: Job? = null
 
             // Capture the exact baseline start time
@@ -58,11 +57,6 @@ class MoviesViewModel(
 
                         // WE HAVE A WINNER! Cancel the other job immediately
                         jobTopRated?.cancel()
-
-                        // Capture the exact baseline end time
-                        val endTime = System.currentTimeMillis()
-                        Log.d("time_taken_popular", "time_taken: ${endTime - startTime}")
-
                         _moviesState.update {
                             // Update the current endpoint for UI Consumption @MoviesScreen.kt
                             currentEndPoint = endPoint
@@ -94,7 +88,7 @@ class MoviesViewModel(
 
                         // Capture the exact baseline end time
                         val endTime = System.currentTimeMillis()
-                        Log.d("time_taken_topRated", "time_taken: ${endTime - startTime}")
+                        println("time_taken_topRated, time_taken: ${endTime - startTime}")
 
                         _moviesState.update {
                             // Update the current endpoint for UI Consumption @MoviesScreen.kt
@@ -102,7 +96,6 @@ class MoviesViewModel(
                             MovieUIState.Success(topRatedMovies.body()?.results ?: emptyList(), endPointTopRated)
                         }
                         sendWinnerBroadcast(application, endPointTopRated)
-
                     }
 
                 } catch (e: Exception) {

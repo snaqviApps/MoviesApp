@@ -8,7 +8,7 @@ data class Result(
     @SerializedName("genre_ids") val genreIds: List<Int>?,
     val id: Int?,
     val title: String? = null,
-    val origin_country : List<String>? = null,
+    @SerializedName("original_name") val originCountry : List<String>? = null,
     @SerializedName("original_language") val originalLanguage: String?,
     @SerializedName("original_title") val originalTitle: String?,
     val overview: String?,

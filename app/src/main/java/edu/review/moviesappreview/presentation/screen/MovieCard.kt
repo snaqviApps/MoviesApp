@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontFamily
 fun MovieCard(
     modifier: Modifier = Modifier,
     endPoint: String,
-    mState: MovieUIState.Success,
+    mState: MovieUIState.Success
 ) {
     Card(
         modifier = modifier

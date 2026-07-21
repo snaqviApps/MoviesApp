@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".presentation.MovieBroadcastReceiver"
+        <receiver android:name=".util.MovieBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="edu.review.moviesappreview.RACE_COMPLETE" />
