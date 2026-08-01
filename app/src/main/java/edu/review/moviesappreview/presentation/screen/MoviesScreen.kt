@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -23,6 +24,9 @@ import edu.review.moviesappreview.data.remote.MoviesRepository
 
 import edu.review.moviesappreview.presentation.MovieUIState
 import edu.review.moviesappreview.presentation.MoviesViewModel
+import edu.review.moviesappreview.presentation.screen.camerascream.SecurityCameraScreen
+import edu.review.moviesappreview.presentation.screen.camerascream.VideoPlayerDialog
+import edu.review.moviesappreview.util.testStreamUrl
 
 @Composable
 fun MoviesScreen(
@@ -54,6 +58,25 @@ fun MoviesScreen(
                         modifier = Modifier.fillMaxSize(),
                         endPoint = viewModel.currentEndPoint,
                         mState = mState
+                    )
+
+                    // ExoPlayer implementation for Security Camera
+                    SecurityCameraScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        streamUrl = testStreamUrl,
+                        onSecurityStream = { isSecurityCamera, steamUrl ->
+                            if (isSecurityCamera) {
+                                VideoPlayerDialog(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(320.dp),
+                                    steamUrl = steamUrl,
+                                    onDismissRequest = {
+                                        viewModel.enableExoPlayerDefaults()
+                                    },
+                                )
+                            }
+                        }
                     )
                 }
                 is MovieUIState.Error -> {

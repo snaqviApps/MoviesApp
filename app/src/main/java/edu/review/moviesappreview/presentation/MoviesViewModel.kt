@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.review.moviesappreview.BuildConfig.API_KEY
 import edu.review.moviesappreview.data.remote.MoviesRepository
+import edu.review.moviesappreview.domain.remote.MoviesService
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -22,16 +23,19 @@ import kotlinx.coroutines.CancellationException // FIXED: Correct import path
 
 class MoviesViewModel(
     private val application: Application,
-    private val moviesRepository: MoviesRepository = MoviesRepository()
+    private val moviesRepository: MoviesService = MoviesRepository()    // ---> Polymorphism
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)
     val moviesState: StateFlow<MovieUIState> = _moviesState.asStateFlow()
     var showMovies by mutableStateOf(false)
         private set
-    var isLoading by mutableStateOf(true)
-        private set
+
     var currentEndPoint by mutableStateOf("popular")
         private set
+
+    var enableSecurityCamera by mutableStateOf(true)
+        private set
+
 
     init {
         enableMoviesDataFetching(currentEndPoint)
@@ -128,10 +132,13 @@ class MoviesViewModel(
         if (!showMovies || currentEndPoint != endPoint) {
             showMovies = true
             currentEndPoint = endPoint
-            isLoading = false
             fetchPopularOrTopRatedMovies(endPoint)
         }
         return endPoint
+    }
+
+    fun enableExoPlayerDefaults() {
+        enableSecurityCamera = !enableSecurityCamera
     }
 
 }

@@ -70,6 +70,14 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material.icons.core)
+
+
+    // ExoPlayer
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.exoplayer.hls)      // Needed for HLS (.m3u8) st
+    implementation(libs.androidx.media3.exoplayer.rtsp)
 
     implementation(libs.coil.compose)
 
