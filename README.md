@@ -63,7 +63,7 @@ ExoPlayer branch carries the major changes below:
       <b>ExoPlayer on Display</b>
     </td>
     <td align="center" valign="bottom">
-      <b>Winne Movie Notification</b>
+      <b>Winner Movie Notification</b>
     </td>
   </tr>
   <!-- Row 2: Images -->
