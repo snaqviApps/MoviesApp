@@ -26,7 +26,7 @@ ChangeList:
 - MovieBroadcastReceiver.kt - Verified channel reset and high priority settings.
 
 --------------------------
-ExoPlayer branch carries the major changes below: 
+<b>ExoPlayer branch</b> carries the major changes below: 
 
 1. ExoPlayer Integration (VideoPlayer.kt):
 - Uses Media3 ExoPlayer to handle video playback.
