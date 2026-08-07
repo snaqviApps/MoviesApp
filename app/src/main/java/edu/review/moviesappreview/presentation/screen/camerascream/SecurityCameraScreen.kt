@@ -3,7 +3,7 @@ package edu.review.moviesappreview.presentation.screen.camerascream
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.review.moviesappreview.presentation.MoviesViewModel
+import edu.review.moviesappreview.presentation.viewmodel.MoviesViewModel
 
 @Composable
 fun SecurityCameraScreen(

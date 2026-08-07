@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.presentation
+package edu.review.moviesappreview.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -8,10 +8,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import edu.review.moviesappreview.BuildConfig.API_KEY
-import edu.review.moviesappreview.data.remote.MoviesRepository
-import edu.review.moviesappreview.domain.remote.MoviesService
+import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.review.moviesappreview.BuildConfig
+import edu.review.moviesappreview.data.repository.remote.MoviesRepository
+import edu.review.moviesappreview.presentation.MovieUIState
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,11 +21,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException // FIXED: Correct import path
+import javax.inject.Inject
 
-class MoviesViewModel(
+@HiltViewModel
+class MoviesViewModel @Inject constructor (
     private val application: Application,
-    private val moviesRepository: MoviesService = MoviesRepository()    // ---> Polymorphism
+//    private val moviesRepository: IMoviesRepository
+    private val moviesRepository: MoviesRepository
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)
     val moviesState: StateFlow<MovieUIState> = _moviesState.asStateFlow()
@@ -56,7 +60,7 @@ class MoviesViewModel(
 
             jobPopular = launch(start = CoroutineStart.LAZY) {
                 try {
-                    val popularMovies = moviesRepository.getMovies(endPoint, API_KEY, 5)
+                    val popularMovies = moviesRepository.getMovies(endPoint, BuildConfig.API_KEY, 5)
                     if (popularMovies.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
@@ -84,7 +88,8 @@ class MoviesViewModel(
 
                 val endPointTopRated = "top_rated"
                 try {
-                    val topRatedMovies = moviesRepository.getMovies(endPointTopRated, API_KEY, 5)
+                    val topRatedMovies = moviesRepository.getMovies(endPointTopRated,
+                        BuildConfig.API_KEY, 5)
                     if (topRatedMovies.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
