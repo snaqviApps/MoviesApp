@@ -13,6 +13,7 @@ import edu.review.moviesappreview.BuildConfig
 import edu.review.moviesappreview.data.repository.remote.MoviesRepository
 import edu.review.moviesappreview.domain.remote.IMoviesRepository
 import edu.review.moviesappreview.presentation.MovieUIState
+import edu.review.moviesappreview.usecases.GetMoviesUseCase
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -27,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MoviesViewModel @Inject constructor (
     private val application: Application,
-    private val moviesRepository: MoviesRepository
+    private val getMoviesUseCase: GetMoviesUseCase,
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)
     val moviesState: StateFlow<MovieUIState> = _moviesState.asStateFlow()
@@ -60,15 +61,15 @@ class MoviesViewModel @Inject constructor (
 
             jobPopular = launch(start = CoroutineStart.LAZY) {
                 try {
-                    val popularMovies = moviesRepository.getMovies(endPoint, BuildConfig.API_KEY, 5)
-                    if (popularMovies.isSuccessful) {
+                    val getMoviesUseCase = getMoviesUseCase(endPoint, BuildConfig.API_KEY, 5)
+                    if (getMoviesUseCase.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
                         jobTopRated?.cancel()
                         _moviesState.update {
                             // Update the current endpoint for UI Consumption @MoviesScreen.kt
                             currentEndPoint = endPoint
-                            MovieUIState.Success(popularMovies.body()?.results ?: emptyList(), endPoint)
+                            MovieUIState.Success(getMoviesUseCase.body()?.results ?: emptyList(), endPoint)
                         }
                         sendWinnerBroadcast(application, endPoint)
 
@@ -88,8 +89,7 @@ class MoviesViewModel @Inject constructor (
 
                 val endPointTopRated = "top_rated"
                 try {
-                    val topRatedMovies = moviesRepository.getMovies(endPointTopRated,
-                        BuildConfig.API_KEY, 5)
+                    val topRatedMovies = getMoviesUseCase(endPointTopRated, BuildConfig.API_KEY, 5)
                     if (topRatedMovies.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately

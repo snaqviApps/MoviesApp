@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import edu.review.moviesappreview.domain.remote.IMoviesRepository
+import edu.review.moviesappreview.usecases.GetMoviesUseCase
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -27,5 +28,12 @@ object MoviesNetworkModule {
             .build()
             .create(IMoviesRepository::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun providesGetMoviesUseCase(
+        moviesRepository: IMoviesRepository
+    ): GetMoviesUseCase = GetMoviesUseCase(moviesRepository)
+
 
 }
