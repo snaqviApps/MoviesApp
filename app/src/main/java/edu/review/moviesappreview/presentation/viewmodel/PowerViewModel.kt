@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.review.moviesappreview.data.repository.system.PowerRepository
 import edu.review.moviesappreview.domain.PowerState
+import edu.review.moviesappreview.domain.repository.IPowerRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -16,10 +17,10 @@ class PowerViewModel @Inject constructor (
     private val iPowerRepository: PowerRepository
 ) : ViewModel() {
 
-    val powerState: StateFlow<PowerState?> = iPowerRepository.getPowerState()
+    val powerState: StateFlow<PowerState> = iPowerRepository.getPowerState()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
+            initialValue = PowerState.PluggedStatusLoading(true)
         )
 }

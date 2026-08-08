@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.review.moviesappreview.BuildConfig
 import edu.review.moviesappreview.data.repository.remote.MoviesRepository
+import edu.review.moviesappreview.domain.remote.IMoviesRepository
 import edu.review.moviesappreview.presentation.MovieUIState
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import kotlinx.coroutines.CancellationException
@@ -26,7 +27,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MoviesViewModel @Inject constructor (
     private val application: Application,
-//    private val moviesRepository: IMoviesRepository
     private val moviesRepository: MoviesRepository
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)

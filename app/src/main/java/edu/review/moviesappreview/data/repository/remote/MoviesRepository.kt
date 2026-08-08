@@ -18,7 +18,7 @@ class MoviesRepository @Inject constructor (
     ): Response<Movies> {
         Log.d("endPoint_repo", "endPoint_repo: $endPoint")
         return iMoviesRepository
-            .getMovies(endPoint, apiKey)
+            .getMovies(endPoint, apiKey, page)
     }
 }
 

@@ -30,9 +30,8 @@ fun PowerStatusScreen(
     }
 
     LaunchedEffect(powerState) {
-        val state = powerState ?: return@LaunchedEffect
-
-        val message = when (state) {
+        val message = when (powerState) {
+            is PowerState.PluggedStatusLoading -> return@LaunchedEffect
             is PowerState.PluggedIn -> "🔌 Cable plugged in real-time!"
             is PowerState.PluggedOut -> "🔋 Cable pulled out real-time!"
         }
