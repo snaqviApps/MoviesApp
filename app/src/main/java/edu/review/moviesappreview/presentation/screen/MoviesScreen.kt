@@ -1,6 +1,5 @@
 package edu.review.moviesappreview.presentation.screen
 
-import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -28,11 +26,8 @@ fun MoviesScreen(
     modifier: Modifier = Modifier,
     viewModel: MoviesViewModel = hiltViewModel()
 ) {
-    // 1. Grab the application context safely inside the Composable body first
-    val appContext: Application = LocalContext.current.applicationContext as Application
 
     val moviesState by viewModel.moviesState.collectAsStateWithLifecycle()
-
     LoadMovieScreen(
         modifier = modifier.fillMaxSize(),
         onMovieView = {

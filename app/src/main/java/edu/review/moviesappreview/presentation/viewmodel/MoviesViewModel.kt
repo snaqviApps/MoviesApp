@@ -94,7 +94,7 @@ class MoviesViewModel @Inject constructor (
                             val movies = winnerResponse.body()?.results ?: emptyList()
                             MovieUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
                         }
-                        sendWinnerBroadcast(application, winnerEndPoint)
+                        sendWinnerBroadcast(winnerEndPoint)
                     } else {
                         _moviesState.value =
                             MovieUIState.Error("Error fetching movies with code: ${winnerResponse.code()}")
@@ -110,12 +110,12 @@ class MoviesViewModel @Inject constructor (
     }
 
 
-    private fun sendWinnerBroadcast(appContext: Application, winnerEndPoint: String) {
-        val broadcastIntent = Intent(appContext, MovieBroadcastReceiver::class.java).apply {
+    private fun sendWinnerBroadcast(winnerEndPoint: String) {
+        val broadcastIntent = Intent(application, MovieBroadcastReceiver::class.java).apply {
             action = MovieBroadcastReceiver.ACTION_RACE_COMPLETE
             putExtra(MovieBroadcastReceiver.EXTRA_WINNER, winnerEndPoint)
         }
-        appContext.sendBroadcast(broadcastIntent)
+        application.sendBroadcast(broadcastIntent)
     }
 
     fun enableMoviesDataFetching(endPoint: String): String {
