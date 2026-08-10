@@ -66,7 +66,8 @@ Key Components:
 
 3. Broadcast Integration: Dispatches a MovieBroadcastReceiver.ACTION_RACE_COMPLETE intent, allowing other parts of the app to react to the winner.
 
-Implementation Details:
+<b>Implementation Details</b>:
+
 • Structured Concurrency: Wrapped in coroutineScope to ensure that if the parent viewModelScope is cancelled, all internal async tasks are also cleaned up.
 • State Management: Updates _moviesState with the winner's data and sets currentEndPoint to reflect the winning category.
 • Error Handling: Catches exceptions and updates the UI state to MovieUIState.Error, while properly re-throwing CancellationException to maintain coroutine hygiene.
@@ -75,6 +76,7 @@ Observations & Recommendations:
 • Efficiency: This approach effectively reduces perceived latency by not waiting for a specific endpoint if another is faster.
 • Resource Usage: While it doubles the initial request count, the immediate cancellation of the slower request mitigates unnecessary data usage.
 • Scalability: This pattern can be extended to more than two sources if needed (e.g., racing multiple mirrors or cache vs. network).
+
 
 
 
