@@ -107,7 +107,6 @@ fun MovieCard(
                             style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }
-//                    Spacer(modifier.height(3.dp))
                     result.overview?.let { text ->
                         Text(
                             modifier = Modifier.padding(horizontal = 4.dp),

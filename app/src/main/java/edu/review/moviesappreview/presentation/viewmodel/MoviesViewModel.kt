@@ -10,19 +10,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.review.moviesappreview.BuildConfig
+import edu.review.moviesappreview.data.movies.Movies
 import edu.review.moviesappreview.data.repository.remote.MoviesRepository
-import edu.review.moviesappreview.domain.remote.IMoviesRepository
 import edu.review.moviesappreview.presentation.MovieUIState
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
+import retrofit2.Response
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class MoviesViewModel @Inject constructor (
@@ -40,7 +43,6 @@ class MoviesViewModel @Inject constructor (
     var enableSecurityCamera by mutableStateOf(true)
         private set
 
-
     init {
         enableMoviesDataFetching(currentEndPoint)
     }
@@ -51,79 +53,60 @@ class MoviesViewModel @Inject constructor (
         viewModelScope.launch {
             if (!showMovies) return@launch
 
-            // References to keep track of both sibling jobs
-            var jobPopular: Job?            //  initialized, when assigned to 'launch'
-            var jobTopRated: Job? = null
-
             // Capture the exact baseline start time
             val startTime = System.currentTimeMillis()
 
-            jobPopular = launch(start = CoroutineStart.LAZY) {
-                try {
-                    val popularMovies = moviesRepository.getMovies(endPoint, BuildConfig.API_KEY, 5)
-                    if (popularMovies.isSuccessful) {
-
-                        // WE HAVE A WINNER! Cancel the other job immediately
-                        jobTopRated?.cancel()
-                        _moviesState.update {
-                            // Update the current endpoint for UI Consumption @MoviesScreen.kt
-                            currentEndPoint = endPoint
-                            MovieUIState.Success(popularMovies.body()?.results ?: emptyList(), endPoint)
-                        }
-                        sendWinnerBroadcast(application, endPoint)
-
+            try {
+                coroutineScope {
+                    val popularDeferred: Deferred<Response<Movies>> = async {
+                        moviesRepository.getMovies(
+                            endPoint = endPoint,
+                            apiKey = BuildConfig.API_KEY,
+                            page = 5
+                        )
                     }
-                } catch (e: Exception) {
-
-                    // 🛑 CRITICAL: Ignore cancellation exception
-                    if(e is CancellationException) throw e
-
-                    // Only update error state if the job wasn't canceled by the winner
-                    Log.e("MovieRace", "Error or cancellation in $endPoint", e)
-                    _moviesState.value = MovieUIState.Error(e.message ?: "Something went wrong")
-                }
-            }
-
-            jobTopRated = launch(start = CoroutineStart.LAZY) {
-
-                val endPointTopRated = "top_rated"
-                try {
-                    val topRatedMovies = moviesRepository.getMovies(endPointTopRated,
-                        BuildConfig.API_KEY, 5)
-                    if (topRatedMovies.isSuccessful) {
-
-                        // WE HAVE A WINNER! Cancel the other job immediately
-                        jobPopular.cancel()
-
-                        // Capture the exact baseline end time
-                        val endTime = System.currentTimeMillis()
-                        println("time_taken_topRated, time_taken: ${endTime - startTime}")
-
-                        _moviesState.update {
-                            // Update the current endpoint for UI Consumption @MoviesScreen.kt
-                            currentEndPoint = endPointTopRated
-                            MovieUIState.Success(topRatedMovies.body()?.results ?: emptyList(), endPointTopRated)
-                        }
-                        sendWinnerBroadcast(application, endPointTopRated)
+                    val topRatedDeferred: Deferred<Response<Movies>> = async {
+                        moviesRepository.getMovies(
+                            endPoint = "top_rated",
+                            apiKey = BuildConfig.API_KEY,
+                            page = 5
+                        )
                     }
 
-                } catch (e: Exception) {
+                    val (winnerResponse, winnerEndPoint)  = select {
+                        popularDeferred.onAwait { popularResponse ->
+                            topRatedDeferred.cancel()
+                            Pair(popularResponse, endPoint)
+                        }
+                        topRatedDeferred.onAwait { topRatedResponse ->
+                            popularDeferred.cancel()
+                            Pair(topRatedResponse, "top_rated")
+                        }
+                    }
+                    val endTime = System.currentTimeMillis()
+                    Log.d("winnerTime", "winnerTime: ${endTime - startTime}")
 
-                    // 🛑 CRITICAL: Ignore cancellation exception
-                    if(e is CancellationException) throw e
-
-                    // Only update error state if the job wasn't canceled by the winner
-                    Log.e("MovieRace", "Error or cancellation in $endPointTopRated", e)
-                    _moviesState.value = MovieUIState.Error(e.message ?: "Something went wrong")
+                    if (winnerResponse.isSuccessful) {
+                        currentEndPoint = winnerEndPoint
+                        _moviesState.update {
+                            val movies = winnerResponse.body()?.results ?: emptyList()
+                            MovieUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
+                        }
+                        sendWinnerBroadcast(application, winnerEndPoint)
+                    } else {
+                        _moviesState.value =
+                            MovieUIState.Error("Error fetching movies with code: ${winnerResponse.code()}")
+                    }
                 }
-            }
-
-            // 4. BOTH jobs are now fully non-null and safely allocated.
-            // Now we pull the trigger on both at the exact same instant!
-            jobPopular.start()
-            jobTopRated.start()
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e("MoviesViewModel", "Error fetching movies: ${e.message}", e)
+                _moviesState.value = MovieUIState.Error("Error fetching movies: ${e.message}")
+           }
         }
+
     }
+
 
     private fun sendWinnerBroadcast(appContext: Application, winnerEndPoint: String) {
         val broadcastIntent = Intent(appContext, MovieBroadcastReceiver::class.java).apply {
