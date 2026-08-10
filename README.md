@@ -53,6 +53,28 @@ ChangeList:
 • androidx.media3:media3-exoplayer-rtsp
 
 --------------------------
+<b>Branch: alternate-parallel-backend-calls</b>
+
+- The new implementation in MoviesViewModel utilizes a "racing" pattern to fetch movie data from two different endpoints simultaneously, opting for the result that arrives first.
+Key Components:
+
+1. async { ... }: Launches two concurrent coroutines.
+   popularDeferred: Fetches movies based on the provided endPoint (defaults to "popular"). topRatedDeferred: Fetches movies from the "top_rated" endpoint.
+
+2. select { ... }: Acts as a race coordinator. 
+   onAwait: Suspends until the first Deferred completes. Cancellation: Immediately cancels the "loser" coroutine (topRatedDeferred.cancel() or popularDeferred.cancel()) to save resources.
+3. Performance Tracking: Uses System.currentTimeMillis() to log the winnerTime, providing insights into network latency.
+4. Broadcast Integration: Dispatches a MovieBroadcastReceiver.ACTION_RACE_COMPLETE intent, allowing other parts of the app to react to the winner.
+
+Implementation Details:
+• Structured Concurrency: Wrapped in coroutineScope to ensure that if the parent viewModelScope is cancelled, all internal async tasks are also cleaned up.
+• State Management: Updates _moviesState with the winner's data and sets currentEndPoint to reflect the winning category.
+• Error Handling: Catches exceptions and updates the UI state to MovieUIState.Error, while properly re-throwing CancellationException to maintain coroutine hygiene.
+
+Observations & Recommendations:
+• Efficiency: This approach effectively reduces perceived latency by not waiting for a specific endpoint if another is faster.
+• Resource Usage: While it doubles the initial request count, the immediate cancellation of the slower request mitigates unnecessary data usage.
+• Scalability: This pattern can be extended to more than two sources if needed (e.g., racing multiple mirrors or cache vs. network).
 
 
 

@@ -57,6 +57,7 @@ class MoviesViewModel @Inject constructor (
             val startTime = System.currentTimeMillis()
 
             try {
+                // Launch both network calls in parallel using async
                 coroutineScope {
                     val popularDeferred: Deferred<Response<Movies>> = async {
                         moviesRepository.getMovies(
@@ -73,13 +74,14 @@ class MoviesViewModel @Inject constructor (
                         )
                     }
 
+                    // Race the two deferred results using select
                     val (winnerResponse, winnerEndPoint)  = select {
                         popularDeferred.onAwait { popularResponse ->
-                            topRatedDeferred.cancel()
+                            topRatedDeferred.cancel()       // Cancel the losing request
                             Pair(popularResponse, endPoint)
                         }
                         topRatedDeferred.onAwait { topRatedResponse ->
-                            popularDeferred.cancel()
+                            popularDeferred.cancel()        // Cancel the losing request
                             Pair(topRatedResponse, "top_rated")
                         }
                     }
