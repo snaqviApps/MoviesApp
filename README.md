@@ -63,8 +63,8 @@ Key Components:
 
 2. select { ... }: Acts as a race coordinator. 
    onAwait: Suspends until the first Deferred completes. Cancellation: Immediately cancels the "loser" coroutine (topRatedDeferred.cancel() or popularDeferred.cancel()) to save resources.
-3. Performance Tracking: Uses System.currentTimeMillis() to log the winnerTime, providing insights into network latency.
-4. Broadcast Integration: Dispatches a MovieBroadcastReceiver.ACTION_RACE_COMPLETE intent, allowing other parts of the app to react to the winner.
+
+3. Broadcast Integration: Dispatches a MovieBroadcastReceiver.ACTION_RACE_COMPLETE intent, allowing other parts of the app to react to the winner.
 
 Implementation Details:
 • Structured Concurrency: Wrapped in coroutineScope to ensure that if the parent viewModelScope is cancelled, all internal async tasks are also cleaned up.
