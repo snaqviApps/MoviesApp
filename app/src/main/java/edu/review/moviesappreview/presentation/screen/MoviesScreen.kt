@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -14,33 +15,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.ViewModelProvider
-
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.review.moviesappreview.data.remote.MoviesRepository
-
 import edu.review.moviesappreview.presentation.MovieUIState
-import edu.review.moviesappreview.presentation.MoviesViewModel
+import edu.review.moviesappreview.presentation.viewmodel.MoviesViewModel
+import edu.review.moviesappreview.presentation.screen.camerascream.SecurityCameraScreen
+import edu.review.moviesappreview.presentation.screen.camerascream.VideoPlayerDialog
+import edu.review.moviesappreview.util.testStreamUrl
 
 @Composable
 fun MoviesScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: MoviesViewModel = hiltViewModel()
 ) {
     // 1. Grab the application context safely inside the Composable body first
     val appContext: Application = LocalContext.current.applicationContext as Application
-
-    val viewModel: MoviesViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MoviesViewModel(
-                    application = appContext,
-                    moviesRepository = MoviesRepository()
-                ) as T
-            }
-        }
-    )
 
     val moviesState by viewModel.moviesState.collectAsStateWithLifecycle()
 
@@ -54,6 +43,25 @@ fun MoviesScreen(
                         modifier = Modifier.fillMaxSize(),
                         endPoint = viewModel.currentEndPoint,
                         mState = mState
+                    )
+
+                    // ExoPlayer implementation for Security Camera
+                    SecurityCameraScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        streamUrl = testStreamUrl,
+                        onSecurityStream = { isSecurityCamera, steamUrl ->
+                            if (isSecurityCamera) {
+                                VideoPlayerDialog(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(320.dp),
+                                    steamUrl = steamUrl,
+                                    onDismissRequest = {
+                                        viewModel.enableExoPlayerDefaults()
+                                    },
+                                )
+                            }
+                        }
                     )
                 }
                 is MovieUIState.Error -> {

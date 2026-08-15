@@ -13,11 +13,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import dagger.hilt.android.AndroidEntryPoint
 import edu.review.moviesappreview.presentation.screen.MoviesScreen
-import edu.review.moviesappreview.presentation.screen.PowerStatusScreen
+import edu.review.moviesappreview.presentation.screen.system.PowerStatusScreen
 import edu.review.moviesappreview.ui.theme.MoviesAppReviewTheme
 import edu.review.moviesappreview.util.checkAndRequestNotificationPermission
 
+
+
+@AndroidEntryPoint
+//@InstallIn(SingletonComponent::class)
 class MainActivity : ComponentActivity() {
 
     val nameIn by lazy { localClassName }

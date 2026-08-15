@@ -9,13 +9,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.review.moviesappreview.presentation.MoviesViewModel
+import edu.review.moviesappreview.presentation.viewmodel.MoviesViewModel
 
 @Composable
 fun LoadMovieScreen(
     modifier: Modifier = Modifier,
     onMovieView: @Composable (isPopular: Boolean) -> Unit,
-    viewModel: MoviesViewModel,
+    viewModel: MoviesViewModel
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -70,6 +70,19 @@ fun LoadMovieScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                 ) {
                     Text("Popular")
+                }
+            }
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 6.dp, end = 6.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Button(
+                    onClick = { viewModel.enableExoPlayerDefaults() },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                ){
+                    Text("Launch ExoPlayer")
                 }
             }
         }

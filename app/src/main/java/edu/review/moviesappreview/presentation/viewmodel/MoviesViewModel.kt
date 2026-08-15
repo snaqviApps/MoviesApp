@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.presentation
+package edu.review.moviesappreview.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -8,9 +8,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import edu.review.moviesappreview.BuildConfig.API_KEY
-import edu.review.moviesappreview.data.remote.MoviesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.review.moviesappreview.BuildConfig
+import edu.review.moviesappreview.data.repository.remote.MoviesRepository
+import edu.review.moviesappreview.domain.remote.IMoviesRepository
+import edu.review.moviesappreview.presentation.MovieUIState
+import edu.review.moviesappreview.usecases.GetMoviesUseCase
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,20 +23,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException // FIXED: Correct import path
+import javax.inject.Inject
 
-class MoviesViewModel(
+@HiltViewModel
+class MoviesViewModel @Inject constructor (
     private val application: Application,
-    private val moviesRepository: MoviesRepository = MoviesRepository()
+    private val getMoviesUseCase: GetMoviesUseCase,
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)
     val moviesState: StateFlow<MovieUIState> = _moviesState.asStateFlow()
     var showMovies by mutableStateOf(false)
         private set
-    var isLoading by mutableStateOf(true)
-        private set
+
     var currentEndPoint by mutableStateOf("popular")
         private set
+
+    var enableSecurityCamera by mutableStateOf(true)
+        private set
+
 
     init {
         enableMoviesDataFetching(currentEndPoint)
@@ -52,15 +61,15 @@ class MoviesViewModel(
 
             jobPopular = launch(start = CoroutineStart.LAZY) {
                 try {
-                    val popularMovies = moviesRepository.getMovies(endPoint, API_KEY, 5)
-                    if (popularMovies.isSuccessful) {
+                    val getMoviesUseCase = getMoviesUseCase(endPoint, BuildConfig.API_KEY, 5)
+                    if (getMoviesUseCase.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
                         jobTopRated?.cancel()
                         _moviesState.update {
                             // Update the current endpoint for UI Consumption @MoviesScreen.kt
                             currentEndPoint = endPoint
-                            MovieUIState.Success(popularMovies.body()?.results ?: emptyList(), endPoint)
+                            MovieUIState.Success(getMoviesUseCase.body()?.results ?: emptyList(), endPoint)
                         }
                         sendWinnerBroadcast(application, endPoint)
 
@@ -80,7 +89,7 @@ class MoviesViewModel(
 
                 val endPointTopRated = "top_rated"
                 try {
-                    val topRatedMovies = moviesRepository.getMovies(endPointTopRated, API_KEY, 5)
+                    val topRatedMovies = getMoviesUseCase(endPointTopRated, BuildConfig.API_KEY, 5)
                     if (topRatedMovies.isSuccessful) {
 
                         // WE HAVE A WINNER! Cancel the other job immediately
@@ -128,10 +137,13 @@ class MoviesViewModel(
         if (!showMovies || currentEndPoint != endPoint) {
             showMovies = true
             currentEndPoint = endPoint
-            isLoading = false
             fetchPopularOrTopRatedMovies(endPoint)
         }
         return endPoint
+    }
+
+    fun enableExoPlayerDefaults() {
+        enableSecurityCamera = !enableSecurityCamera
     }
 
 }
