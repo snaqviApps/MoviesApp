@@ -15,6 +15,6 @@ abstract class PowerModule {
     @Binds
     @Singleton
     abstract fun bindPowerRepository(
-        powerRepository: IPowerRepository
+        powerRepository: PowerRepository
     ): IPowerRepository
 }

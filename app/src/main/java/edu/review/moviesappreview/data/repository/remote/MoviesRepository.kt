@@ -2,14 +2,14 @@ package edu.review.moviesappreview.data.repository.remote
 
 import android.util.Log
 import edu.review.moviesappreview.data.movies.Movies
-import edu.review.moviesappreview.domain.remote.IMoviesRepository
+import edu.review.moviesappreview.domain.remote.MoviesApiService
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class MoviesRepository @Inject constructor (
-    private val iMoviesRepository: IMoviesRepository
+    private val moviesApiService: MoviesApiService
 ) {
     suspend fun getMovies(
         endPoint: String,
@@ -17,7 +17,7 @@ class MoviesRepository @Inject constructor (
         page: Int
     ): Response<Movies> {
         Log.d("endPoint_repo", "endPoint_repo: $endPoint")
-        return iMoviesRepository
+        return moviesApiService
             .getMovies(endPoint, apiKey, page)
     }
 }

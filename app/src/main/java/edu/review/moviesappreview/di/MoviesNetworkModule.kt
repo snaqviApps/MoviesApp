@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import edu.review.moviesappreview.domain.remote.IMoviesRepository
+import edu.review.moviesappreview.domain.remote.MoviesApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -19,13 +19,13 @@ object MoviesNetworkModule {
 
     @Singleton
     @Provides
-    fun provideMoviesService(): IMoviesRepository {
+    fun provideMoviesService(): MoviesApiService {
         return Retrofit
             .Builder()
             .baseUrl(provideBaseUrl())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(IMoviesRepository::class.java)
+            .create(MoviesApiService::class.java)
     }
 
 }
