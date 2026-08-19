@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.domain.remote
+package edu.review.moviesappreview.domain.repository.remote
 
 import edu.review.moviesappreview.data.movies.Movies
 import retrofit2.Response

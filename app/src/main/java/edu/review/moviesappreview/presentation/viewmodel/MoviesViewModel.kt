@@ -46,21 +46,21 @@ class MoviesViewModel @Inject constructor (
         viewModelScope.launch {
             if (!showMovies) return@launch
 
-                val result = getFastestMovieFeedUseCase(
-                    defaultEndPoint = endPoint,
-                    apiKey = BuildConfig.API_KEY,
-                    page = 5
-                )
-                result.onSuccess { (movies, winnerEndPoint) ->
-                    currentEndPoint = winnerEndPoint
-                    _moviesState.update {
-                        MovieUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
-                    }
-                    sendWinnerBroadcast(winnerEndPoint)
-                }.onFailure { exception ->
-                    _moviesState.value = MovieUIState.Error("Error fetching movies: ${exception.message}")
+            val result = getFastestMovieFeedUseCase(
+                defaultEndPoint = endPoint,
+                apiKey = BuildConfig.API_KEY,
+                page = 5
+            )
+            result.onSuccess { (movies, winnerEndPoint) ->
+                currentEndPoint = winnerEndPoint
+                _moviesState.update {
+                    MovieUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
                 }
+                sendWinnerBroadcast(winnerEndPoint)
+            }.onFailure { exception ->
+                _moviesState.value = MovieUIState.Error("Error fetching movies: ${exception.message}")
             }
+        }
 
     }
 
