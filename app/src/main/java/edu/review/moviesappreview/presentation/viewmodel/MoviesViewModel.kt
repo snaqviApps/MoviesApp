@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.review.moviesappreview.BuildConfig
-import edu.review.moviesappreview.presentation.MovieUIState
+import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.usecase.GetFastestMovieFeedUseCase
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +24,8 @@ class MoviesViewModel @Inject constructor (
     private val application: Application,
     private val getFastestMovieFeedUseCase: GetFastestMovieFeedUseCase
 ) : ViewModel() {
-    private val _moviesState = MutableStateFlow<MovieUIState>(MovieUIState.Loading)
-    val moviesState: StateFlow<MovieUIState> = _moviesState.asStateFlow()
+    private val _moviesState = MutableStateFlow<MoviesUIState>(MoviesUIState.Loading)
+    val moviesState: StateFlow<MoviesUIState> = _moviesState.asStateFlow()
     var showMovies by mutableStateOf(false)
         private set
 
@@ -41,7 +41,7 @@ class MoviesViewModel @Inject constructor (
 
     fun fetchPopularOrTopRatedMovies(endPoint: String) {
 
-        _moviesState.value = MovieUIState.Loading
+        _moviesState.value = MoviesUIState.Loading
 
         viewModelScope.launch {
             if (!showMovies) return@launch
@@ -54,11 +54,11 @@ class MoviesViewModel @Inject constructor (
             result.onSuccess { (movies, winnerEndPoint) ->
                 currentEndPoint = winnerEndPoint
                 _moviesState.update {
-                    MovieUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
+                    MoviesUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
                 }
                 sendWinnerBroadcast(winnerEndPoint)
             }.onFailure { exception ->
-                _moviesState.value = MovieUIState.Error("Error fetching movies: ${exception.message}")
+                _moviesState.value = MoviesUIState.Error("Error fetching movies: ${exception.message}")
             }
         }
 
