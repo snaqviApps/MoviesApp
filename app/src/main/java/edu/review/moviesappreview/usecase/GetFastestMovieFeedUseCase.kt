@@ -15,13 +15,13 @@ import javax.inject.Inject
 class GetFastestMovieFeedUseCase @Inject constructor (
     private val iMoviesRepository: IMoviesRepository
 ) {
-    suspend operator fun invoke(
+    suspend fun execute (
         defaultEndPoint: String,
         apiKey: String,
         page: Int
     ) : Result<Pair<List<MoviesResult>, String>> = coroutineScope {
-        val startTime = System.currentTimeMillis()
 
+        val startTime = System.currentTimeMillis()
         val popularDeferred: Deferred<Response<Movies>> = async {
             iMoviesRepository.getMovies(
                 defaultEndPoint = defaultEndPoint,

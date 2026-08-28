@@ -1,17 +1,16 @@
 package edu.review.moviesappreview.presentation.viewmodel
 
-import android.app.Application
-import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.review.moviesappreview.data.movies.Result as MoviesResult
 import edu.review.moviesappreview.BuildConfig
+import edu.review.moviesappreview.data.repository.system.MoviesNotifierRepository
 import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.usecase.GetFastestMovieFeedUseCase
-import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,8 +20,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MoviesViewModel @Inject constructor (
-    private val application: Application,
-    private val getFastestMovieFeedUseCase: GetFastestMovieFeedUseCase
+    private val moviesNotifier: MoviesNotifierRepository,
+    private val getFastestMovieFeedUseCase: GetFastestMovieFeedUseCase,     // n/w data feed
+//    private val getLocalDBMoviesAddUseCase: GetLocalDBMoviesAddUseCase,     // local db data feed
+
 ) : ViewModel() {
     private val _moviesState = MutableStateFlow<MoviesUIState>(MoviesUIState.Loading)
     val moviesState: StateFlow<MoviesUIState> = _moviesState.asStateFlow()
@@ -42,35 +43,26 @@ class MoviesViewModel @Inject constructor (
     fun fetchPopularOrTopRatedMovies(endPoint: String) {
 
         _moviesState.value = MoviesUIState.Loading
-
         viewModelScope.launch {
             if (!showMovies) return@launch
 
-            val result = getFastestMovieFeedUseCase(
-                defaultEndPoint = endPoint,
-                apiKey = BuildConfig.API_KEY,
-                page = 5
-            )
+            val result: Result<Pair<List<MoviesResult>, String>> =
+                getFastestMovieFeedUseCase.execute(
+                    defaultEndPoint = endPoint,
+                    apiKey = BuildConfig.API_KEY,
+                    page = 5
+                )
             result.onSuccess { (movies, winnerEndPoint) ->
                 currentEndPoint = winnerEndPoint
                 _moviesState.update {
                     MoviesUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
                 }
-                sendWinnerBroadcast(winnerEndPoint)
+                moviesNotifier.notifyRaceWinnerBroadcast(winnerEndPoint)
             }.onFailure { exception ->
                 _moviesState.value = MoviesUIState.Error("Error fetching movies: ${exception.message}")
             }
         }
 
-    }
-
-
-    private fun sendWinnerBroadcast(winnerEndPoint: String) {
-        val broadcastIntent = Intent(application, MovieBroadcastReceiver::class.java).apply {
-            action = MovieBroadcastReceiver.ACTION_RACE_COMPLETE
-            putExtra(MovieBroadcastReceiver.EXTRA_WINNER, winnerEndPoint)
-        }
-        application.sendBroadcast(broadcastIntent)
     }
 
     fun enableMoviesDataFetching(endPoint: String): String {

@@ -4,7 +4,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -19,9 +23,17 @@ fun VideoPlayer(
 ) {
     val context = LocalContext.current
 
+    var playHeadPosition by rememberSaveable { mutableLongStateOf(0L) }
+
+
     // 1. Remember ExoPlayer instance tied to Context
     // 2. Add videoUrl as a key, so the player updates when the URL changes
-    val exoPlayer = remember(
+
+    /**
+    //    val exoPlayer: ExoPlayer = rememberSaveable is WRONG, due to heavy
+     *
+     */
+    val exoPlayer: ExoPlayer = remember (
         context,
         videoUrl
     ) {
@@ -29,15 +41,25 @@ fun VideoPlayer(
         // 2. Configure RTSP Media Source to Force RTP over TCP (Interleaved)
         val mediaItem = MediaItem.fromUri(videoUrl)
         ExoPlayer.Builder(context).build().apply {
-//            setMediaSource(rtspMediaSource)
             setMediaItem(mediaItem)
+
+            // Resume from the cached time stamp
+            seekTo(playHeadPosition)
             prepare()
             playWhenReady = true
         }
     }
 
+    // Interceptors
+
+
+
+
+
     DisposableEffect(exoPlayer) {
         onDispose {
+            // Save the exact time the video was paused
+            playHeadPosition = exoPlayer.currentPosition
             exoPlayer.release()
         }
     }
@@ -52,7 +74,6 @@ fun VideoPlayer(
         },
         modifier = modifier
             .fillMaxWidth(0.8f)
-//            .height(82.dp)
             .aspectRatio(16f / 12f)
     )
 

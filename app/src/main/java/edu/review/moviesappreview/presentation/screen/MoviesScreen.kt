@@ -26,7 +26,6 @@ fun MoviesScreen(
     modifier: Modifier = Modifier,
     viewModel: MoviesViewModel = hiltViewModel()
 ) {
-
     val moviesState by viewModel.moviesState.collectAsStateWithLifecycle()
     LoadMovieScreen(
         modifier = modifier.fillMaxSize(),

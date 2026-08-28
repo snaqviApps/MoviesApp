@@ -22,14 +22,14 @@ object MoviesNetworkModule {
 
     @Provides
     @Singleton
-    fun provideBaseUrl(): String = "https://api.themoviedb.org/3/movie/"
+    fun providesBaseUrl(): String = "https://api.themoviedb.org/3/movie/"
 
     @Singleton
     @Provides
     fun providesMoviesService(): MoviesApiService {
         return Retrofit
             .Builder()
-            .baseUrl(provideBaseUrl())
+            .baseUrl(providesBaseUrl())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(MoviesApiService::class.java)
@@ -47,7 +47,7 @@ abstract class MoviesRepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMoviesRepository(
-        moviesApiService: MoviesRepository
+        moviesRepository: MoviesRepository
     ): IMoviesRepository
 
 }

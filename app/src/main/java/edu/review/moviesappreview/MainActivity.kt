@@ -22,7 +22,6 @@ import edu.review.moviesappreview.util.checkAndRequestNotificationPermission
 
 
 @AndroidEntryPoint
-//@InstallIn(SingletonComponent::class)
 class MainActivity : ComponentActivity() {
 
     val nameIn by lazy { localClassName }

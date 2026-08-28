@@ -64,7 +64,7 @@ fun MovieCard(
                 .weight(1f)
                 .padding(4.dp),
                     // FIX 2: This replaces manual column spacers! It builds a perfect 16dp gap BETWEEN items.d
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(mState.moviesList) { result ->
                 Column(
