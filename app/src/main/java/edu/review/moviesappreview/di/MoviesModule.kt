@@ -5,9 +5,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import edu.review.moviesappreview.data.repository.remote.MoviesRepository
-import edu.review.moviesappreview.domain.repository.remote.IMoviesRepository
-import edu.review.moviesappreview.domain.repository.remote.MoviesApiService
+import edu.review.moviesappreview.data.repository.DefaultMoviesRepository
+import edu.review.moviesappreview.domain.repository.MoviesRepository
+import edu.review.moviesappreview.data.repository.remote.MovieRemoteSource
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -26,18 +26,18 @@ object MoviesNetworkModule {
 
     @Singleton
     @Provides
-    fun providesMoviesService(): MoviesApiService {
+    fun providesMoviesService(): MovieRemoteSource {
         return Retrofit
             .Builder()
             .baseUrl(providesBaseUrl())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(MoviesApiService::class.java)
+            .create(MovieRemoteSource::class.java)
     }
 }
 
 /**
- * Binds the concrete data implementation (MoviesRepository) to its
+ * Binds the concrete data implementation (DefaultMoviesRepository) to its
  * abstract domain interface contract (IMoviesRepository) using @Binds
  */
 @Module
@@ -47,7 +47,7 @@ abstract class MoviesRepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMoviesRepository(
-        moviesRepository: MoviesRepository
-    ): IMoviesRepository
+        defaultMoviesRepository: DefaultMoviesRepository
+    ): MoviesRepository
 
 }

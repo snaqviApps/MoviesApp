@@ -1,7 +1,7 @@
 package edu.review.moviesappreview.data.repository.system
 
 import android.content.Intent
-import edu.review.moviesappreview.domain.repository.system.MovieNotifier
+import edu.review.moviesappreview.domain.repository.MovieNotifier
 import edu.review.moviesappreview.util.MovieBroadcastReceiver
 import javax.inject.Inject
 import dagger.hilt.android.qualifiers.ApplicationContext

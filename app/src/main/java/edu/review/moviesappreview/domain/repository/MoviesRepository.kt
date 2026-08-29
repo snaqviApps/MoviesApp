@@ -1,13 +1,13 @@
-package edu.review.moviesappreview.domain.repository.remote
+package edu.review.moviesappreview.domain.repository
 
 import edu.review.moviesappreview.data.movies.Movies
 import retrofit2.Response
 
 /**
- * Data layer repository
+ * Domain layer repository
  * Defines the app's business contract for fetching movie data, hiding network details from Use Cases.
  */
-interface IMoviesRepository {
+interface MoviesRepository {
     suspend fun getMovies(
         defaultEndPoint: String,
         apiKey: String,

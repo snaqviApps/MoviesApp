@@ -4,12 +4,11 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import edu.review.moviesappreview.data.repository.system.DefaultPowerRepository
 import edu.review.moviesappreview.data.repository.system.MoviesNotifierRepository
-import edu.review.moviesappreview.data.repository.system.PowerRepository
-import edu.review.moviesappreview.domain.repository.IPowerRepository
-import edu.review.moviesappreview.domain.repository.system.MovieNotifier
+import edu.review.moviesappreview.domain.repository.PowerRepository
+import edu.review.moviesappreview.domain.repository.MovieNotifier
 import javax.inject.Singleton
-
 
 /**
  * System / Platform Modules
@@ -27,9 +26,9 @@ abstract class MoviesSystemPowerModules {
 
     @Binds
     @Singleton
-    abstract fun bindsPowerRepository(
-        powerRepository: PowerRepository
-    ): IPowerRepository
+    abstract fun bindsPowerRepository (
+        defaultPowerRepository: DefaultPowerRepository
+    ): PowerRepository
 }
 
 /**

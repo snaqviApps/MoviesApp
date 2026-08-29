@@ -3,7 +3,7 @@ package edu.review.moviesappreview.usecase
 import android.util.Log
 import edu.review.moviesappreview.BuildConfig
 import edu.review.moviesappreview.data.movies.Movies
-import edu.review.moviesappreview.domain.repository.remote.IMoviesRepository
+import edu.review.moviesappreview.domain.repository.MoviesRepository
 import edu.review.moviesappreview.data.movies.Result as MoviesResult // Alias prevents collision with kotlin.Result
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -13,7 +13,7 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class GetFastestMovieFeedUseCase @Inject constructor (
-    private val iMoviesRepository: IMoviesRepository
+    private val moviesRepository: MoviesRepository
 ) {
     suspend fun execute (
         defaultEndPoint: String,
@@ -23,14 +23,14 @@ class GetFastestMovieFeedUseCase @Inject constructor (
 
         val startTime = System.currentTimeMillis()
         val popularDeferred: Deferred<Response<Movies>> = async {
-            iMoviesRepository.getMovies(
+            moviesRepository.getMovies(
                 defaultEndPoint = defaultEndPoint,
                 apiKey = BuildConfig.API_KEY,
                 page = 5
             )
         }
         val topRatedDeferred: Deferred<Response<Movies>> = async {
-            iMoviesRepository.getMovies(
+            moviesRepository.getMovies(
                 defaultEndPoint = "top_rated",
                 apiKey = BuildConfig.API_KEY,
                 page = 5

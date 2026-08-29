@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.domain.repository.system
+package edu.review.moviesappreview.domain.repository
 
 /**
  * Contract for Notifying Movies Race Winner
