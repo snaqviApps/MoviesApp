@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Movies App Review"
 include(":app")
- 
+include(":KotlinNative")

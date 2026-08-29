@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.review.moviesappreview.presentation.MovieUIState
+import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.presentation.viewmodel.MoviesViewModel
 import edu.review.moviesappreview.presentation.screen.camerascream.SecurityCameraScreen
 import edu.review.moviesappreview.presentation.screen.camerascream.VideoPlayerDialog
@@ -26,13 +26,12 @@ fun MoviesScreen(
     modifier: Modifier = Modifier,
     viewModel: MoviesViewModel = hiltViewModel()
 ) {
-
     val moviesState by viewModel.moviesState.collectAsStateWithLifecycle()
     LoadMovieScreen(
         modifier = modifier.fillMaxSize(),
         onMovieView = {
             when (val mState = moviesState) {
-                is MovieUIState.Success -> {
+                is MoviesUIState.Success -> {
                     MovieCard(
                         // FIX 2: Use a clean, fresh Modifier here so it fills the Box perfectly!
                         modifier = Modifier.fillMaxSize(),
@@ -59,13 +58,13 @@ fun MoviesScreen(
                         }
                     )
                 }
-                is MovieUIState.Error -> {
+                is MoviesUIState.Error -> {
                     Text(
                         text = mState.message,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                is MovieUIState.Loading -> {
+                is MoviesUIState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center

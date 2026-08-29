@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.domain.remote
+package edu.review.moviesappreview.data.repository.remote
 
 import edu.review.moviesappreview.data.movies.Movies
 import retrofit2.Response
@@ -6,7 +6,12 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.http.Url
 
-interface IMoviesRepository {
+/**
+ * Remote Data Source provider's Contract
+ * here by Retrofit
+ * @see [edu.review.moviesappreview.di.MoviesNetworkModule.providesMoviesService]
+ */
+interface MovieRemoteSource {
 
     @GET
     suspend fun getMovies(
@@ -15,4 +20,3 @@ interface IMoviesRepository {
         @Query("page") page: Int = 1
     ): Response<Movies>
 }
-

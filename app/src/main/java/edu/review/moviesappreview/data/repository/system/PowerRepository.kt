@@ -7,7 +7,7 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.review.moviesappreview.domain.PowerState
-import edu.review.moviesappreview.domain.repository.IPowerRepository
+import edu.review.moviesappreview.domain.repository.PowerRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,9 +15,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PowerRepository @Inject constructor(
+class DefaultPowerRepository @Inject constructor(
     @param:ApplicationContext private val appContext: Context
-) : IPowerRepository {
+) : PowerRepository {
 
     override fun getPowerState(): Flow<PowerState> = callbackFlow {
         // Emit current state immediately using a sticky intent, Immediately fetch the sticky intent to see the current status.

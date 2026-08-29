@@ -1,0 +1,53 @@
+package edu.review.moviesappreview.di
+
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import edu.review.moviesappreview.data.repository.DefaultMoviesRepository
+import edu.review.moviesappreview.domain.repository.MoviesRepository
+import edu.review.moviesappreview.data.repository.remote.MovieRemoteSource
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
+
+/**
+ * Instantiates and provides third-party network client instances
+ * (Retrofit and MoviesApiService) to Hilt using @Provides.
+ */
+@Module
+@InstallIn(SingletonComponent::class)
+object MoviesNetworkModule {
+
+    @Provides
+    @Singleton
+    fun providesBaseUrl(): String = "https://api.themoviedb.org/3/movie/"
+
+    @Singleton
+    @Provides
+    fun providesMoviesService(): MovieRemoteSource {
+        return Retrofit
+            .Builder()
+            .baseUrl(providesBaseUrl())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MovieRemoteSource::class.java)
+    }
+}
+
+/**
+ * Binds the concrete data implementation (DefaultMoviesRepository) to its
+ * abstract domain interface contract (IMoviesRepository) using @Binds
+ */
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class MoviesRepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindMoviesRepository(
+        defaultMoviesRepository: DefaultMoviesRepository
+    ): MoviesRepository
+
+}
