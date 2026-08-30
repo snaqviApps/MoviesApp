@@ -1,10 +1,11 @@
-package edu.review.moviesappreview.di
+package edu.review.moviesappreview.di.data
 
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import edu.review.moviesappreview.data.movies.Movies
 import edu.review.moviesappreview.data.repository.DefaultMoviesRepository
 import edu.review.moviesappreview.domain.repository.MoviesRepository
 import edu.review.moviesappreview.data.repository.remote.MovieRemoteSource
@@ -48,6 +49,5 @@ abstract class MoviesRepositoryModule {
     @Singleton
     abstract fun bindMoviesRepository(
         defaultMoviesRepository: DefaultMoviesRepository
-    ): MoviesRepository
-
+    ): MoviesRepository<Movies>
 }

@@ -1,16 +1,20 @@
 package edu.review.moviesappreview.domain.repository
 
 import edu.review.moviesappreview.data.movies.Movies
-import retrofit2.Response
+
 
 /**
  * Domain layer repository
- * Defines the app's business contract for fetching movie data, hiding network details from Use Cases.
+ * This is the Business contract. It is the Single Source of Truth for the Use Cases.
+ * Defines the app's business contract for fetching movie data, hiding network details
+ * from Use Cases.
+ * it just promises to provide Movies.
+ *
  */
-interface MoviesRepository {
+interface MoviesRepository<out T : Movies> : DataSource<T> {
     suspend fun getMovies(
-        defaultEndPoint: String,
+        defaultCategory: String,
         apiKey: String,
         page: Int
-    ): Response<Movies>
+    ): Result<Movies>
 }

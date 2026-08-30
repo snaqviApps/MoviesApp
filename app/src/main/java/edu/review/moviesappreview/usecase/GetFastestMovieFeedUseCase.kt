@@ -4,34 +4,34 @@ import android.util.Log
 import edu.review.moviesappreview.BuildConfig
 import edu.review.moviesappreview.data.movies.Movies
 import edu.review.moviesappreview.domain.repository.MoviesRepository
-import edu.review.moviesappreview.data.movies.Result as MoviesResult // Alias prevents collision with kotlin.Result
+import edu.review.moviesappreview.data.movies.Result as MoviesResult    // Alias prevents collision with kotlin.Result
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.selects.select
-import retrofit2.Response
 import javax.inject.Inject
+import kotlin.collections.emptyList
 
-class GetFastestMovieFeedUseCase @Inject constructor (
-    private val moviesRepository: MoviesRepository
+class GetFastestMovieFeedUseCase @Inject constructor(
+    private val moviesRepository: MoviesRepository<Movies>
 ) {
-    suspend fun execute (
-        defaultEndPoint: String,
+    suspend fun execute(
+        defaultCategory: String,
         apiKey: String,
         page: Int
-    ) : Result<Pair<List<MoviesResult>, String>> = coroutineScope {
+    ): Result<Pair<List<MoviesResult>, String>> = coroutineScope {
 
         val startTime = System.currentTimeMillis()
-        val popularDeferred: Deferred<Response<Movies>> = async {
+        val popularDeferred: Deferred<Result<Movies>> = async {
             moviesRepository.getMovies(
-                defaultEndPoint = defaultEndPoint,
+                defaultCategory = defaultCategory,
                 apiKey = BuildConfig.API_KEY,
                 page = 5
             )
         }
-        val topRatedDeferred: Deferred<Response<Movies>> = async {
+        val topRatedDeferred: Deferred<Result<Movies>> = async {
             moviesRepository.getMovies(
-                defaultEndPoint = "top_rated",
+                defaultCategory = "top_rated",
                 apiKey = BuildConfig.API_KEY,
                 page = 5
             )
@@ -41,7 +41,7 @@ class GetFastestMovieFeedUseCase @Inject constructor (
         val (winnerResponse, winnerEndPoint) = select {
             popularDeferred.onAwait { popularResponse ->
                 topRatedDeferred.cancel()       // Cancel the losing request
-                Pair(popularResponse, defaultEndPoint)
+                Pair(popularResponse, defaultCategory)
             }
             topRatedDeferred.onAwait { topRatedResponse ->
                 popularDeferred.cancel()        // Cancel the losing request
@@ -51,11 +51,9 @@ class GetFastestMovieFeedUseCase @Inject constructor (
         val endTime = System.currentTimeMillis()
         Log.d("winnerTime", "winnerTime: ${endTime - startTime}")
 
-        if (winnerResponse.isSuccessful) {
-            val movies : List<MoviesResult> = winnerResponse.body()?.results ?: emptyList()
-            Result.success(Pair(movies, winnerEndPoint)) // Now correctly returns List<MovieResult>
-        } else {
-            Result.failure(Exception("Error fetching movies with code: ${winnerResponse.code()}"))
+        // Maps correctly returns List<MovieResult>
+        winnerResponse.map { movies ->
+            Pair(movies.results ?: emptyList<MoviesResult>(), winnerEndPoint)
         }
     }
 }
