@@ -22,11 +22,11 @@ class DefaultPowerRepository @Inject constructor(
     override fun getPowerState(): Flow<PowerState> = callbackFlow {
         // Emit current state immediately using a sticky intent, Immediately fetch the sticky intent to see the current status.
         // ACTION_BATTERY_CHANGED: This specific intent is marked by the Android System as "Sticky."
-        val batteryStatus: Intent? = appContext.registerReceiver(
+        val batteryStatusIntent: Intent? = appContext.registerReceiver(
             null,
             IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         )
-        val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+        val status = batteryStatusIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
         val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
 
