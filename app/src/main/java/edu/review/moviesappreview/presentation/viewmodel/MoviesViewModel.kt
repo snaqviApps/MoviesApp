@@ -48,7 +48,7 @@ class MoviesViewModel @Inject constructor (
 
             val result: Result<Pair<List<MoviesResult>, String>> =
                 getFastestMovieFeedUseCase.execute(
-                    defaultEndPoint = endPoint,
+                    defaultCategory = endPoint,
                     apiKey = BuildConfig.API_KEY,
                     page = 5
                 )

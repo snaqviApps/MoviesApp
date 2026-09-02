@@ -30,7 +30,7 @@ fun VideoPlayer(
     // 2. Add videoUrl as a key, so the player updates when the URL changes
 
     /**
-    //    val exoPlayer: ExoPlayer = rememberSaveable is WRONG, due to heavy
+    //    val exoPlayer: ExoPlayer = rememberSaveable is WRONG, due to heavy-duty ExoPlayer instance data
      *
      */
     val exoPlayer: ExoPlayer = remember (
@@ -49,12 +49,6 @@ fun VideoPlayer(
             playWhenReady = true
         }
     }
-
-    // Interceptors
-
-
-
-
 
     DisposableEffect(exoPlayer) {
         onDispose {

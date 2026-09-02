@@ -8,11 +8,16 @@ import retrofit2.http.Url
 
 /**
  * Remote Data Source provider's Contract
- * here by Retrofit
- * @see [edu.review.moviesappreview.di.MoviesNetworkModule.providesMoviesService]
+ * provided by Retrofit
+ * @see [edu.review.moviesappreview.di.data.MoviesNetworkModule.providesMoviesService]
+ *
+ * please note:
+ * Retrofit does not support service interfaces that extend generic interfaces
+ * (even if type parameters are resolved).
  */
-interface MovieRemoteSource {
 
+
+interface MovieRemoteSource {
     @GET
     suspend fun getMovies(
         @Url endPoint: String = "popular",

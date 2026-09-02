@@ -2,7 +2,41 @@ package edu.implement.kotlinnative
 
 data class Foo(val i: Int)
 
+
+fun assignStringWeights (inputStr: String) : Int {
+
+    var weightSum = 0
+
+    // separate letters, and order them
+    val abcList = "abcdefghijklmnopqrstuvwxyz"
+
+    // Assign weights:
+    val sortedString = abcList.toCharArray().sorted()               // -----> [a, b, c,...z]
+
+    val assignedWeights : Map<Char, Int> = sortedString
+        .withIndex()
+        .associate { it.value to it.index + 1 }
+
+    inputStr.lowercase()
+        .forEach { ch ->
+        val weight = ch.digitToIntOrNull() ?: assignedWeights[ch] ?: 0
+        weightSum += weight
+    }
+
+    return weightSum
+}
+
+
 fun main() {
+
+      println("\n\n")
+
+      print(assignStringWeights("Hello123"))
+
+      println("\n\n")
+
+
+
     val inventory = listOf(
         Product(id = 2, name = "Mouse", category = "Tech", price = 100),
         Product(id = 3, name = "Desk", category = "Tech", price = 250),

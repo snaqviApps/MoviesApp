@@ -48,6 +48,10 @@ android {
 }
 
 dependencies {
+
+     //Test
+     testImplementation(libs.kotlinx.coroutines.test)
+
     implementation(libs.androidx.compose.foundation)
 
     // Coroutines
