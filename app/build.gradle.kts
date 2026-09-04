@@ -22,6 +22,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val properties = Properties()
         val localPropertiesFile = project.rootProject.file("local.properties")
+        externalNativeBuild {
+            cmake {
+                cppFlags += ""
+            }
+        }
         if (localPropertiesFile.exists()) {
             properties.load(localPropertiesFile.inputStream())
             buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY")}\"")
@@ -44,6 +49,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 }
 

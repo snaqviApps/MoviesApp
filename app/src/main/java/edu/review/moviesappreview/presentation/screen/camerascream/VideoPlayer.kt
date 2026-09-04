@@ -21,6 +21,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import edu.review.moviesappreview.presentation.screen.camerascream.exonative.MyRenderersFactory
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -39,15 +40,22 @@ fun VideoPlayer(
     // 2. Add videoUrl as a key, so the player updates when the URL changes
 
     /**
-     * val exoPlayer: ExoPlayer = rememberSaveable is WRONG, due to heavy-duty ExoPlayer instance data
+    //    val exoPlayer: ExoPlayer = rememberSaveable is WRONG, due to heavy-duty ExoPlayer instance data
      *
      */
-    val exoPlayer: ExoPlayer = remember (context, videoUrl)
-    {
+    val exoPlayer: ExoPlayer = remember (
+        context,
+        videoUrl
+    ) {
+
+        // 👉 INJECT YOUR C++ CODEC HERE
+        val renderersFactory = MyRenderersFactory(context)
+
         // 2. Configure RTSP Media Source to Force RTP over TCP (Interleaved)
         val mediaItem = MediaItem.fromUri(videoUrl)
         ExoPlayer.Builder(
-            context
+            context,
+            renderersFactory
         ).build().apply {
             setMediaItem(mediaItem)
             seekTo(playHeadPosition)        //   Resume from the cached time stamp
@@ -59,7 +67,7 @@ fun VideoPlayer(
     // 2. Handle backgrounding/foregrounding (Crucial for hardware/software codecs)
     DisposableEffect(lifecycleOwner, exoPlayer)
     {
-        val observer = LifecycleEventObserver {_, event ->
+        val observer = LifecycleEventObserver { _, event ->
             when(event) {
                 Lifecycle.Event.ON_PAUSE -> {
                     // Pause video and save state when app goes to background
