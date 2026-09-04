@@ -101,7 +101,13 @@ Observations & Recommendations:
      TV UIs, or shared Kotlin Multiplatform (KMP) targets can execute the exact same racing logic while keeping 
      ViewModels minimal and focused strictly on driving UI state.
 
+--------------------------
+<b> Branch: JNI-C++-codebase</b>
+1. Simulating the ANR by running Thread.sleep() call in GetFastestMovieFeedUseCase.kt class with switching CoroutineContext to .Main (UI).
+   3rd Image depicts that very scenario 
 
+
+--------------------------
 
 <table>
   <!-- Row 1: Titles -->
@@ -120,6 +126,17 @@ Observations & Recommendations:
     </td>
     <td valign="top">
       <img width="1080" height="2400" alt="Screenshot_20260801_104858" src="https://github.com/user-attachments/assets/93359dfd-dd61-4a99-bc0a-5e27b424e36f" />
+    </td>
+  </tr>
+ <!-- Row 3: Images -->
+ <tr>
+  <td align="center" valign="bottom">
+      <b>ANR Simulation, using blocking code (Java Thread) on UI Thread</b>
+    </td>
+ </tr>
+  <tr>
+    <td valign="top">
+     <img width="1080" height="2232" alt="Screenshot_20260903-184730_Movies_App_Review (1)" src="https://github.com/user-attachments/assets/932140ec-ddaa-4d2b-87f5-f00353a76236" />
     </td>
   </tr>
 </table>
