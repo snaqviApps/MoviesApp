@@ -6,9 +6,11 @@ import edu.review.moviesappreview.data.movies.Movies
 import edu.review.moviesappreview.domain.repository.MoviesRepository
 import edu.review.moviesappreview.data.movies.Result as MoviesResult    // Alias prevents collision with kotlin.Result
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.collections.emptyList
 
@@ -21,39 +23,60 @@ class GetFastestMovieFeedUseCase @Inject constructor(
         page: Int
     ): Result<Pair<List<MoviesResult>, String>> = coroutineScope {
 
-        val startTime = System.currentTimeMillis()
-        val popularDeferred: Deferred<Result<Movies>> = async {
-            moviesRepository.getMovies(
-                defaultCategory = defaultCategory,
-                apiKey = BuildConfig.API_KEY,
-                page = 5
-            )
-        }
-        val topRatedDeferred: Deferred<Result<Movies>> = async {
-            moviesRepository.getMovies(
-                defaultCategory = "top_rated",
-                apiKey = BuildConfig.API_KEY,
-                page = 5
-            )
-        }
+        /**
+         * Simulates ANR, when CoroutineContext
+         * 1. switches context to "Main"
+         * 2. adds 'blocking' vs 'suspending'
+         * @param kotlinx.coroutines.Dispatchers.Main
+         *
+         */
+        withContext(
+            context = Dispatchers.Main
+        ) {
 
-        // Race the two deferred results using select
-        val (winnerResponse, winnerEndPoint) = select {
-            popularDeferred.onAwait { popularResponse ->
-                topRatedDeferred.cancel()       // Cancel the losing request
-                Pair(popularResponse, defaultCategory)
-            }
-            topRatedDeferred.onAwait { topRatedResponse ->
-                popularDeferred.cancel()        // Cancel the losing request
-                Pair(topRatedResponse, "top_rated")
-            }
-        }
-        val endTime = System.currentTimeMillis()
-        Log.d("winnerTime", "winnerTime: ${endTime - startTime}")
+            /**
+             *  Simulating ANR:
+             *  1.
+             *  >  5000ms: enough time to fail the Main (UI)
+             *  so UI becomes non-responsive
+             *
+             * */
+            Thread.sleep(8000)
 
-        // Maps correctly returns List<MovieResult>
-        winnerResponse.map { movies ->
-            Pair(movies.results ?: emptyList<MoviesResult>(), winnerEndPoint)
+            val startTime = System.currentTimeMillis()
+            val popularDeferred: Deferred<Result<Movies>> = async {
+                moviesRepository.getMovies(
+                    defaultCategory = defaultCategory,
+                    apiKey = BuildConfig.API_KEY,
+                    page = 5
+                )
+            }
+            val topRatedDeferred: Deferred<Result<Movies>> = async {
+                moviesRepository.getMovies(
+                    defaultCategory = "top_rated",
+                    apiKey = BuildConfig.API_KEY,
+                    page = 5
+                )
+            }
+
+            // Race the two deferred results using select
+            val (winnerResponse, winnerEndPoint) = select {
+                popularDeferred.onAwait { popularResponse ->
+                    topRatedDeferred.cancel()       // Cancel the losing request
+                    Pair(popularResponse, defaultCategory)
+                }
+                topRatedDeferred.onAwait { topRatedResponse ->
+                    popularDeferred.cancel()        // Cancel the losing request
+                    Pair(topRatedResponse, "top_rated")
+                }
+            }
+            val endTime = System.currentTimeMillis()
+            Log.d("winnerTime", "winnerTime: ${endTime - startTime}")
+
+            // Maps correctly returns List<MovieResult>
+            winnerResponse.map { movies ->
+                Pair(movies.results ?: emptyList<MoviesResult>(), winnerEndPoint)
+            }
         }
     }
 }
