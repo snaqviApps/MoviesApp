@@ -1,7 +1,11 @@
-This App displays a list of movies from the TMDB API, with 03 endpoints
- - Popular
- - Top Rated
- - Now Playing
+<H3><u></u>Application Main Idea</u></H3>
+
+1. This App displays a list of movies from the TMDB API, with the race-winner among top-two endpoints, given below:
+   - Popular
+   - Top Rated
+   - Now Playing
+
+2. It also implements the <img src="https://dummyimage.com/600x32/FFFF00/000000.png&text=JNI+for+video+codes,+here+H.265" alt="Sample Banner" />
 
 App flows by Initializing with TMDB integration, and gives user options using CTAs to select the end points
 as mentioned above
