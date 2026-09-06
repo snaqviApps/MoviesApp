@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.presentation.screen.camerascream
+package edu.review.moviesappreview.presentation.screen.cameraresults
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,7 +21,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-import edu.review.moviesappreview.presentation.screen.camerascream.exonative.MyRenderersFactory
+import edu.review.moviesappreview.presentation.screen.cameraresults.exonative.MyRenderersFactory
 
 @OptIn(UnstableApi::class)
 @Composable

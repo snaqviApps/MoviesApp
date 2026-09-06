@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.presentation.screen.camerascream.exonative
+package edu.review.moviesappreview.presentation.screen.cameraresults.exonative
 
 import android.content.Context
 import androidx.annotation.OptIn
