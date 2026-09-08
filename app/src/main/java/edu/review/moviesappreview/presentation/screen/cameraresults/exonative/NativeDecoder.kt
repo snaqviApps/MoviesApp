@@ -13,11 +13,14 @@ class NativeDecoder {
     // Unified external declarations matching the C++ functions
     private external fun initNative(width: Int, height: Int): Long
 
-
     private external fun decodeNative(
         ptr: Long,
         input: ByteBuffer,
-        output: VideoDecoderOutputBuffer // 👈 Pass the whole object
+        inputSize: Int,
+        timeUs: Long,
+        flags: Int,
+        output: VideoDecoderOutputBuffer,
+        capacity: Long
     ): Int
 
 //    private external fun initNativeDecoder(width: Int, height: Int): Long
@@ -33,9 +36,24 @@ class NativeDecoder {
     }
 
 //    fun decode(inputData: ByteBuffer?, outputData: ByteBuffer?): Int {
-    fun decode(inputData: ByteBuffer?, outputBuffer: VideoDecoderOutputBuffer?): Int {
+    fun decode(
+            inputSize: Int,
+            timeUs: Long,
+            flags: Int,
+            inputData: ByteBuffer?,
+            outputBuffer: VideoDecoderOutputBuffer?,
+            capacity: Long
+        ): Int {
         if (inputData == null || outputBuffer == null || decoderPtr == 0L) return -1
-        return decodeNative(decoderPtr, inputData, outputBuffer)
+         return decodeNative(
+             decoderPtr,
+             inputData,
+             inputSize,
+             timeUs,
+             flags,
+             outputBuffer,
+             capacity
+         )
     }
 
     fun release() {

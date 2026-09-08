@@ -7,6 +7,12 @@
 #define LOG_TAG "JNI_DEBUG"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
+/** 👈 ADD THIS INCLUDE
+ *  for NDK-media codec
+ */
+#include <media/NdkMediaCodec.h>
+#include <media/NdkMediaFormat.h>
+
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 
@@ -15,37 +21,85 @@ class Video_Decoder_JNI {
 public:
     int width;
     int height;
+    AMediaCodec* codec = nullptr;
 
     Video_Decoder_JNI(int w, int h) : width(w), height(h) {
         // Initialize your library, allocate internal frame buffers,
         // or set up codec context (e.g., FFmpeg, libvpx, or custom C++ state)
         LOGI("C++ Decoder created for resolution: %dx%d", width, height);
+
+        // 1. Create H.264 Decoder
+        codec = AMediaCodec_createDecoderByType("video/avc");
+
+        // 2. Configure Format
+        AMediaFormat* format = AMediaFormat_new();
+        AMediaFormat_setString(format, AMEDIAFORMAT_KEY_MIME, "video/avc");
+        AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_WIDTH, width);
+        AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, height);
+
+        // 3. Configure and start Codec (passing null for surface and crypto)
+        AMediaCodec_configure(codec, format, nullptr, nullptr, 0);
+        AMediaCodec_start(codec);
+        AMediaFormat_delete(format);
     }
 
     ~Video_Decoder_JNI() {
         // Free internal C++ frame buffers or codec state here
         LOGI("C++ Decoder destroyed");
+        if(codec) {
+            AMediaCodec_stop(codec);
+            AMediaCodec_delete(codec);
+        }
     }
 
-//    static int decodeFrame(void *inputData, int inputSize, void *outputData) {
-    static int decodeFrame(void *inputData, int inputSize, void *outputData, jlong outputCapacity) {
+    // REMOVE 'static' keyword here
+    int decodeFrame(
+            void *inputData,
+            int inputSize,
+            jlong timeUs,      // 👈 Added parameter
+            jint flags,        // 👈 Added parameter
+            void *outputData,
+            jlong outputCapacity
+      ) {
         // Your actual decoding algorithm/math goes here
+        if (!codec) return -1;
 
-        auto* outPixels = (uint32_t*) outputData;
-
-        // Calculate exactly how many 32-bit pixels we can safely fit in the provided memory
-        jlong safePixelCount = outputCapacity / 4;
-
-
-        // Fill a 1920x1080 buffer with solid Green
-        // for (int i = 0; i < 1920 * 1080; i++) {
-
-        // FIll safely, withOut pipeline-crashing, top-portion
-        for (int i = 0; i < safePixelCount; i++) {
-            outPixels[i] = 0xFF00FF00; // Little-Endian ABGR
+        // 1. Feed the input data NAL UNIT to the codec (2000 microsecond timeout)
+        ssize_t inIdx = AMediaCodec_dequeueInputBuffer(codec, 2000);
+        if (inIdx >= 0) {
+            size_t bufSize;
+            uint8_t* inBuf = AMediaCodec_getInputBuffer(codec, inIdx, &bufSize);
+            if(inBuf && inputSize <= bufSize) {
+                memcpy(inBuf, inputData, inputSize);
+                AMediaCodec_queueInputBuffer(codec, inIdx, 0, inputSize, timeUs, flags);
+            }
         }
 
-        return 0; // Return 0 for success, -1 for error
+        // 2. EXTRACT THE UNCOMPRESSED YUV FRAME
+        AMediaCodecBufferInfo info;
+        ssize_t outIdx = AMediaCodec_dequeueOutputBuffer(codec, &info, 2000);
+        if (outIdx >= 0) {
+            __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "FRAME DECODED! Size: %d", info.size);
+            size_t outSize;
+            uint8_t* outBuf = AMediaCodec_getOutputBuffer(codec, outIdx, &outSize);
+
+            // Copy if the hardware frame fits in your Kotlin buffer
+            if (outBuf && info.size <= outputCapacity) {
+
+            /**
+              * Mismatch in below
+              * current info.size = 3110400 or 3.1MB (YUV420P: 1.5-Bytes per pixel),
+              * While, expectation is RGBA 8888, i.e: 4 bytes per pixel = 8.2MB
+              */
+                memcpy(outputData, outBuf + info.offset, info.size);
+            }
+
+            // Release back to the hardware pool
+            AMediaCodec_releaseOutputBuffer(codec, outIdx, false);
+            return 0; // Return 0 for success, -1 for error
+        }
+
+        return -1;  // Decoder still processing, no frame ready yet
     }
 };
 
@@ -76,87 +130,60 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
 extern "C" {
 JNIEXPORT jint JNICALL
 Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_NativeDecoder_decodeNative(
-        JNIEnv *env,
-        jobject thiz,
+        JNIEnv *env, jobject thiz,
         jlong decoder_ptr,
         jobject input_data,
-        jobject output_buffer_obj
+        jint input_size,      // 👈 Matches Kotlin 'inputSize: Int'
+        jlong time_us,        // 👈 Matches Kotlin 'timeUs: Long'
+        jint flags,           // 👈 Matches Kotlin 'flags: Int'
+        jobject output_buffer_obj,
+        jlong capacity        // 👈 Matches Kotlin 'capacity: Long'
 ) {
     __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "=== C++ DECODE REACHED ===");
 
-    // 1. Extract the Encoded Input Data
+    // 1. Extract the Encoded Input Data pointer
     auto* encodedBytes = (uint8_t*) env->GetDirectBufferAddress(input_data);
-    jlong encodedSize = env->GetDirectBufferCapacity(input_data);
-
-    if(!encodedBytes || encodedSize == 0) {
-        __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "Empty input buffer");
+    if (!encodedBytes || input_size == 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "JNI_DEBUG", "Empty input buffer");
         return -1;
     }
 
-    // 2. Extract the Output Buffer
+    // 2. Extract the Output Buffer pointer
     jclass outputBufferClass = env->GetObjectClass(output_buffer_obj);
     jfieldID dataField = env->GetFieldID(outputBufferClass, "data", "Ljava/nio/ByteBuffer;");
     jobject dataBufferObj = env->GetObjectField(output_buffer_obj, dataField);
 
-    // 🚀 ADD THIS CHECK:
     if (!dataBufferObj) {
         __android_log_print(ANDROID_LOG_ERROR, "JNI_DEBUG", "Output ByteBuffer is null");
         return -1;
     }
 
-
-    //    jfieldID modeField = env->GetFieldID(outputBufferClass, "mode", "I");
-
-
     auto *pixels = (uint8_t *) env->GetDirectBufferAddress(dataBufferObj);
-    jlong capacity = env->GetDirectBufferCapacity(dataBufferObj);
     if (!pixels) return -1;
 
     // 3. RECOVER YOUR C++ INSTANCE
     auto *decoder = reinterpret_cast<Video_Decoder_JNI *>(decoder_ptr);
 
     // 4. DECODE AND WRITE
-    // Pass the encoded bytes IN, and the output `pixels` buffer to write the uncompressed frame OUT
-    int decodeStatus = decoder->decodeFrame(encodedBytes, encodedSize, pixels, capacity);
+    // Pass the extracted pointers and variables into your C++ engine
+    int decodeStatus = decoder->decodeFrame(
+            encodedBytes,
+            input_size,
+            time_us,
+            flags,
+            pixels,
+            capacity
+    );
 
     if (decodeStatus < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "JNI_DEBUG", "C++ Engine failed to decode frame");
+        // Silently return -1 so Kotlin knows the hardware is still buffering
         return -1;
     }
 
-//    // 1. Calculate the exact sizes
-//    int width = 1920;
-//    int height = 1080;
-//    int y_size = width * height;
-
-    // 2. Only write to the Y plane (the first portion of the buffer)
-    // This makes the screen definitely opaque (no more transparency)
-
-
-
-//    if (pixels) {
-//        // Fill with a visible grey value (128)
-//        memset(pixels, 128, y_size);
-//        for (int i = 0; i < capacity; i++) {
-//            // Create a repeating 0-255 gradient
-//            pixels[i] = (uint8_t)(i % 256);
-//        }
-//    }
-
-    // 3. THE HANDSHAKE
-//    env->SetIntField(output_buffer_obj, modeField, 0);
-
-    // Call with EXACT strides
-//    jmethodID initMethod = env->GetMethodID(outputBufferClass, "initForYuvFrame", "(IIIII)Z");
-//    env->CallBooleanMethod(output_buffer_obj, initMethod, width, height, width, width / 2, 1);
-
-
-
-
     return 0;
+}
+}
 
-}
-}
 
 extern "C" {
 JNIEXPORT jint JNICALL

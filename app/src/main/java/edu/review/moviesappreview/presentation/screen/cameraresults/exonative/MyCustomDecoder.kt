@@ -1,5 +1,6 @@
 package edu.review.moviesappreview.presentation.screen.cameraresults.exonative
 
+import android.media.MediaCodec.BUFFER_FLAG_CODEC_CONFIG
 import androidx.annotation.OptIn
 import androidx.media3.common.Format
 import androidx.media3.common.util.UnstableApi
@@ -7,6 +8,8 @@ import androidx.media3.decoder.DecoderException
 import androidx.media3.decoder.DecoderInputBuffer
 import androidx.media3.decoder.SimpleDecoder
 import androidx.media3.decoder.VideoDecoderOutputBuffer
+import androidx.media3.common.C.BUFFER_FLAG_END_OF_STREAM
+import androidx.media3.common.C.BUFFER_FLAG_KEY_FRAME
 
 
 @OptIn(UnstableApi::class)
@@ -76,35 +79,49 @@ class MyCustomDecoder(
         // 3-1. Safety Check: If data is not ready, just skip this frame!
         val inputData = inputBuffer.data
         val outputData = outputBuffer.data
-
-        // 🚀 UPDATE THIS LOG:
-        android.util.Log.d("JNI_DEBUG", "KOTLIN DECODE: input=${inputData != null}, output=${outputData != null}")
-
-
         if (inputData == null || outputData == null) {
             // We return null (no exception), but don't call C++.
             // This tells ExoPlayer: "Nothing to see here, moving on."
             return null
         }
 
-        val result = nativeDecoder.decode(inputData, outputBuffer = outputBuffer)
+//        val result = nativeDecoder.decode(inputData, outputBuffer = outputBuffer)
+
+        // 1. Extract the exact payload size, time, and config flags
+        val inputSize = inputData.limit()
+        val timeUs = inputBuffer.timeUs
+
+        // 2. Pass them to C++, hardcoding flags to 0
+        val result = nativeDecoder.decode(
+            inputSize,
+            timeUs,
+            0,
+            inputData, // 👈 Hardcoded
+            outputBuffer,
+            outputData.capacity().toLong()
+        )
+
+
+//        if (result < 0) {
+//            // 🚀 OPTIONAL: Log this instead of throwing an exception
+//            android.util.Log.e("JNI_DEBUG", "C++ Decode failed with status: $result")
+//            return DecoderException("Native decoding failed")         <----------------------------- Killing the View
+//        }
 
         if (result < 0) {
-            // 🚀 OPTIONAL: Log this instead of throwing an exception
-            android.util.Log.e("JNI_DEBUG", "C++ Decode failed with status: $result")
-            return DecoderException("Native decoding failed")
+            // 1. DO NOT throw DecoderException.
+            // 2. Silently flag the buffer as decode-only so ExoPlayer drops it but keeps the pipeline alive.
+            outputBuffer.addFlag(androidx.media3.common.C.BUFFER_FLAG_DECODE_ONLY)
+            return null
         }
 
         // 4. Pass the timing information back to ExoPlayer
         outputBuffer.timeUs = inputBuffer.timeUs
-//        outputBuffer.mode = androidx.media3.common.C.VIDEO_OUTPUT_MODE_SURFACE_YUV // 👈 ADD THIS
         outputBuffer.mode = currentOutputMode
 
         // Clear any error flags
-//        outputBuffer.clearFlag(androidx.media3.common.C.BUFFER_FLAG_DECODE_ONLY) -----> Flag deprecated in Java
-        outputBuffer.clearFlag(androidx.media3.common.C.BUFFER_FLAG_END_OF_STREAM)
-
-        outputBuffer.addFlag(androidx.media3.common.C.BUFFER_FLAG_KEY_FRAME) // Mark as a Key Frame
+        outputBuffer.clearFlag(BUFFER_FLAG_END_OF_STREAM)
+        outputBuffer.addFlag(BUFFER_FLAG_KEY_FRAME) // Mark as a Key Frame
 
         return null
     }
