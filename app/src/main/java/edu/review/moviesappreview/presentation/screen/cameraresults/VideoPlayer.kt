@@ -96,7 +96,16 @@ fun VideoPlayer(
         factory = { ctx ->
             PlayerView(ctx).apply {
                 player = exoPlayer
+
+
                 useController = true // Displays standard play/pause/timeline controls
+
+                // 🚀 ADD THIS: Use TextureView for software decoders
+                // (Requires @OptIn(UnstableApi::class))
+                setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
+//                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
+                setShutterBackgroundColor(android.graphics.Color.BLACK)
+
             }
         },
         modifier = modifier
