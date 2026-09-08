@@ -131,12 +131,12 @@ Observations & Recommendations:
  <!-- Row 3: Images -->
  <tr>
   <td align="center" valign="bottom">
-      <b>ANR Simulation, using blocking code (Java Thread) on UI Thread</b>
+      <b>Displays Pre-Decoding solid Green View</b>
     </td>
  </tr>
   <tr>
     <td valign="top">
-     <img width="1080" height="2232" alt="Screenshot_20260903-184730_Movies_App_Review (1)" src="https://github.com/user-attachments/assets/932140ec-ddaa-4d2b-87f5-f00353a76236" />
+     <img width="1080" height="2400" alt="Screenshot_20260908_040020" src="https://github.com/user-attachments/assets/2558da4f-1188-4e35-b37d-841f6388afed" />
     </td>
   </tr>
 </table>
