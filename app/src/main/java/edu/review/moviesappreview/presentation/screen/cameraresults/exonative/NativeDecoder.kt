@@ -11,7 +11,7 @@ class NativeDecoder {
     private var decoderPtr: Long = 0L
 
     // Unified external declarations matching the C++ functions
-    private external fun initNative(width: Int, height: Int): Long
+    private external fun initNative(width: Int, height: Int, surface: Surface?): Long
 
     private external fun decodeNative(
         ptr: Long,
@@ -26,9 +26,9 @@ class NativeDecoder {
 //    private external fun initNativeDecoder(width: Int, height: Int): Long
     private external fun releaseNative(ptr: Long): Int
 
-    fun init(width: Int, height: Int) {
+    fun init(width: Int, height: Int, surface: Surface?) {
         if (decoderPtr == 0L) {
-            decoderPtr = initNative(width, height)
+            decoderPtr = initNative(width, height, surface)
 
             // 🚀 Added THIS LOG, to see if the pointer:decodePtr is working
             android.util.Log.d("JNI_DEBUG", "Kotlin: Received Pointer = $decoderPtr")
@@ -56,6 +56,8 @@ class NativeDecoder {
          )
     }
 
+    
+
     fun release() {
         if (decoderPtr != 0L) {
             releaseNative(decoderPtr)
@@ -63,19 +65,26 @@ class NativeDecoder {
         }
     }
 
-    private external fun renderToSurface(
-        decoderPtr: Long,
-        outputBuffer: VideoDecoderOutputBuffer,
-        surface: Surface
-    ): Int
+//    private external fun renderToSurface(
+//        decoderPtr: Long,
+//        outputBuffer: VideoDecoderOutputBuffer,
+//        surface: Surface
+//    ): Int
+//
+//    fun render(outputBuffer: VideoDecoderOutputBuffer, surface: Surface) {
+//        if (decoderPtr != 0L) {
+//            renderToSurface(
+//                decoderPtr,
+//                outputBuffer,
+//                surface
+//            )
+//        }
+//    }
 
-    fun render(outputBuffer: VideoDecoderOutputBuffer, surface: Surface) {
-        if (decoderPtr != 0L) {
-            renderToSurface(
-                decoderPtr,
-                outputBuffer,
-                surface
-            )
-        }
+    private external fun renderToSurface(decoderPtr: Long, outIdx: Int): Int
+    fun render(outIdx: Int) {
+        if (decoderPtr != 0L) renderToSurface(decoderPtr, outIdx)
     }
+
+
 }

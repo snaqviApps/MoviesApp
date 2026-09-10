@@ -9,6 +9,7 @@ import androidx.media3.exoplayer.video.DecoderVideoRenderer
 import androidx.media3.exoplayer.video.VideoRendererEventListener
 import android.os.Handler
 import androidx.media3.common.C
+import androidx.media3.common.MimeTypes
 
 // Keep your other imports (C, Format, MimeTypes, etc.)
 import androidx.media3.exoplayer.RendererCapabilities
@@ -38,20 +39,31 @@ class MyCustomVideoRenderer(
         return "MyCustomCppVideoRenderer"
     }
 
+    // Add this property to your renderer class
+    private var currentSurface: Surface? = null
+
+    override fun handleMessage(messageType: Int, message: Any?) {
+        // 👈 Use the Renderer class constant here
+        if (messageType == MSG_SET_VIDEO_OUTPUT) {
+            currentSurface = message as? Surface
+        }
+        super.handleMessage(messageType, message)
+    }
+
     @C.FormatSupport
     override fun supportsFormat(format: Format): Int {
         val mimeType = format.sampleMimeType
 
-        // Example for H.265 / HEVC. Change to match your C++ codec's supported format.
-//        return if (MimeTypes.VIDEO_H265.equals(mimeType, ignoreCase = true)) {
-//            RendererCapabilities.create(C.FORMAT_HANDLED)
-//        }
-//        else {
-//            RendererCapabilities.create(C.FORMAT_UNSUPPORTED_TYPE)
-//        }
-        // Force to use C++ codec
-        return RendererCapabilities.create(C.FORMAT_HANDLED)
-
+        // Example for H.264 / HEVC. Change to match your C++ codec's supported format.
+        /**
+         * only support H264 for now
+         */
+        return if (MimeTypes.VIDEO_H264.equals(mimeType, ignoreCase = true)) {
+            RendererCapabilities.create(C.FORMAT_HANDLED)
+        }
+        else {
+            RendererCapabilities.create(C.FORMAT_UNSUPPORTED_TYPE)
+        }
     }
 
     override fun createDecoder(
@@ -60,7 +72,7 @@ class MyCustomVideoRenderer(
     ): MyCustomDecoder {
 
         //2. Instantiate and store the decoder instance
-        val newDecoder = MyCustomDecoder(format)
+        val newDecoder = MyCustomDecoder(format, currentSurface)
         this.decoder = newDecoder
         return newDecoder
 //        return MyCustomDecoder(format)
@@ -71,14 +83,31 @@ class MyCustomVideoRenderer(
         surface: Surface
     ) {
 
+        // 1. Read the hardware index (the claim ticket) we saved in C++
+        outputBuffer.data!!.order(java.nio.ByteOrder.nativeOrder())
+        val hardwarePts = outputBuffer.data!!.getLong(8)
+        val outIdx = outputBuffer.data!!.getInt(0)
+
+        // ADD THIS LOG:
+        android.util.Log.d("JNI_DEBUG", "KOTLIN READ - Index: $outIdx, TimeUs: $hardwarePts")
+
         // 🚀 ADD THIS LOG:
         android.util.Log.d("JNI_DEBUG", "KOTLIN: Handing off buffer to C++ for painting")
 
-        // 🚀 THE HANDOFF: Tell C++ to paint the buffer onto the surface
-        decoder?.nativeDecoder?.render(outputBuffer, surface)
+        // 🚀 THE HANDOFF: Tell C++ to paint the buffer onto the surface via GPU
+        // 2. Tell C++ to release and paint that specific hardware buffer
+        decoder?.nativeDecoder?.render(outIdx)
 
         // 🚀 THE SIGNAL: Tell ExoPlayer a frame was drawn!
+        // 3. 🚀 Notify ExoPlayer the frame was drawn (This unblocks your Audio clock!)
         onProcessedOutputBuffer(outputBuffer.timeUs)
+
+        // 3. Tell the master clock the video is visible (Unblocks Audio!)
+//        maybeNotifyRenderedFirstFrame() -----> private in DecoderVideoRenderer
+
+        // 3. 🚀 THE MISSING LINK: Return the empty buffer to the pool!
+        // This prevents the system from stalling after exactly 8 frames.
+        outputBuffer.release()
     }
 
 //    override fun setDecoderOutputMode(outputMode: Int) {
