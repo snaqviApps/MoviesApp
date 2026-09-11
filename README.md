@@ -5,7 +5,7 @@
    - Top Rated
    - Now Playing
 
-2. It also implements the <img src="https://dummyimage.com/600x32/FFFF00/000000.png&text=JNI+for+video+codes,+here+H.265" alt="Sample Banner" />
+2. It also implements the <img src="https://dummyimage.com/600x32/FFFF00/000000.png&text=JNI+for+video+codes,+Genaralized [H.264 (AVC), H.265, VP9 and more]" alt="Sample Banner" />
 
 App flows by Initializing with TMDB integration, and gives user options using CTAs to select the end points
 as mentioned above
@@ -106,9 +106,7 @@ Observations & Recommendations:
      ViewModels minimal and focused strictly on driving UI state.
 
 --------------------------
-<b> Branch: JNI-C++-codebase</b>
-1. Simulating the ANR by running Thread.sleep() call in GetFastestMovieFeedUseCase.kt class with switching CoroutineContext to .Main (UI).
-   3rd Image depicts that very scenario 
+<b> Branch: JNI-C++-codebase</b> 
 
 
 --------------------------
