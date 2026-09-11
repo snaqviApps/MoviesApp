@@ -43,26 +43,36 @@ fun VideoPlayer(
     //    val exoPlayer: ExoPlayer = rememberSaveable is WRONG, due to heavy-duty ExoPlayer instance data
      *
      */
-    val exoPlayer: ExoPlayer = remember (
-        context,
-        videoUrl
-    ) {
 
-        // 👉 INJECT YOUR C++ CODEC HERE
-        val renderersFactory = MyRenderersFactory(context)
+        // Moving ExoPlayer instantiation from 'remember{}' block to 'mutableStateOf()',
+        // to fix the Issue of returning to ON_RESUME with exoPlayer.play() call on a
+        // 'dead / released', After User had pressed the 'Home' button. That made the
+        // exoPlayer.release() call, but did not call the .onDispose {}, as
 
-        // 2. Configure RTSP Media Source to Force RTP over TCP (Interleaved)
-        val mediaItem = MediaItem.fromUri(videoUrl)
-        ExoPlayer.Builder(
-            context,
-            renderersFactory
-        ).build().apply {
-            setMediaItem(mediaItem)
-            seekTo(playHeadPosition)        //   Resume from the cached time stamp
-            prepare()
-            playWhenReady = playWhenReadyState
-        }
+       // 🌟 State to track our player instance dynamically
+       var exoPlayer by remember { mutableStateOf<ExoPlayer?>(null) }
+
+       // Helper function to build a fresh, un-released ExoPlayer instance
+       fun initPlayer() : ExoPlayer {
+           val myRenderersFactory = MyRenderersFactory(context)
+           val mediaItem = MediaItem.fromUri(videoUrl)
+           return ExoPlayer.Builder(context,
+               myRenderersFactory)
+               .build()
+               .apply {
+                   setMediaItem(mediaItem)
+                   seekTo(playHeadPosition)
+                   prepare()
+                   playWhenReady = playWhenReadyState
+               }
+       }
+
+    // Initialize on first composition if null
+    if(exoPlayer == null) {
+        exoPlayer = initPlayer()
     }
+
+
 
     // 2. Handle backgrounding/foregrounding (Crucial for hardware/software codecs)
     DisposableEffect(lifecycleOwner, exoPlayer)
@@ -70,15 +80,26 @@ fun VideoPlayer(
         val observer = LifecycleEventObserver { _, event ->
             when(event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    // Pause video and save state when app goes to background
-                    exoPlayer.pause()
-                    playWhenReadyState = exoPlayer.playWhenReady
-                    playHeadPosition = exoPlayer.currentPosition
+                    exoPlayer?.let { player ->
+                     player.pause()
+                        playWhenReadyState = player.playWhenReady
+                        playHeadPosition = player.currentPosition
+                    }
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    // 🚀 HOME BUTTON PROTECTION: Fully release hardware resources
+                    // when app is moved to background via Home button.
+                    exoPlayer?.release()
+                    exoPlayer = null
                 }
                 Lifecycle.Event.ON_RESUME -> {
                     // Resume video when app returns to foreground
-                    exoPlayer.playWhenReady = true
-                    exoPlayer.play()
+                    if(exoPlayer == null) {
+                        exoPlayer = initPlayer()
+                    } else {
+                        exoPlayer?.playWhenReady = true
+                        exoPlayer?.play()
+                    }
                 }
                 else -> {}
             }
@@ -86,8 +107,11 @@ fun VideoPlayer(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            playHeadPosition = exoPlayer.currentPosition   // Save the exact time
-            exoPlayer.release()
+            exoPlayer?.let { player ->
+                playHeadPosition = player.currentPosition   // Save the exact time
+                player.release()
+            }
+            exoPlayer = null
         }
     }
 
@@ -97,15 +121,18 @@ fun VideoPlayer(
             PlayerView(ctx).apply {
                 player = exoPlayer
 
-
                 useController = true // Displays standard play/pause/timeline controls
 
                 // 🚀 ADD THIS: Use TextureView for software decoders
                 // (Requires @OptIn(UnstableApi::class))
                 setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
-//                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
                 setShutterBackgroundColor(android.graphics.Color.BLACK)
-
+            }
+        },
+        update = { playerView ->
+            // 🚀 CRITICAL: Update the player reference inside AndroidView when reinitialized!
+            if(playerView.player != exoPlayer) {
+                playerView.player = exoPlayer
             }
         },
         modifier = modifier

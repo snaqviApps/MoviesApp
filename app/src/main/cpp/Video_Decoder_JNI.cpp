@@ -1,4 +1,3 @@
-// app/src/main/cpp/video_decoder_jni.cpp
 
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
@@ -18,7 +17,6 @@
 #include <media/NdkMediaFormat.h>
 
 
-
 // 1. A representation of your actual C++ Decoder class/engine
 class Video_Decoder_JNI {
 public:
@@ -29,17 +27,23 @@ public:
     Video_Decoder_JNI(
             int w,
             int h,
-            ANativeWindow* window               // added to handle surface
+            ANativeWindow* window,               // added to handle Surface
+            const char* mimeType
     ) : width(w), height(h) {
         // Initialize your library, allocate internal frame buffers,
         // or set up codec context (e.g., FFmpeg, libvpx, or custom C++ state)
         LOGI("C++ Decoder created for resolution: %dx%d", width, height);
 
-        // 1. Create H.264 Decoder
-        codec = AMediaCodec_createDecoderByType("video/avc");
 
-        // 2. Configure Format
+
+        // 1. Instead of hard-coding H.264 Decoder,now generalizing codec, by Passing it to the decoder creation factory
+        codec = AMediaCodec_createDecoderByType(mimeType);
+
+        // 2. Configure Format,
         AMediaFormat* format = AMediaFormat_new();
+
+        // 3. Pass generalizing codec, to the Format configuration
+        AMediaFormat_setString(format, AMEDIAFORMAT_KEY_MIME, mimeType);
         AMediaFormat_setString(format, AMEDIAFORMAT_KEY_MIME, "video/avc");
         AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_WIDTH, width);
         AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, height);
@@ -60,8 +64,7 @@ public:
         }
     }
 
-    // REMOVE 'static' keyword here
-    int decodeFrame(
+    int decodeFrame (
             void *inputData,
             int inputSize,
             jlong timeUs,
@@ -92,27 +95,7 @@ public:
             __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "C++ OUT - Index: %d, TimeUs: %lld",
                     (int)outIdx, (long long)info.presentationTimeUs);
 
-            __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "FRAME DECODED! Size: %d", info.size);
-
-
             // 1. ❌ DO NOT use AMediaCodec_getOutputBuffer or memcpy anymore!
-
-//            size_t outSize;
-//            uint8_t* outBuf = AMediaCodec_getOutputBuffer(codec, outIdx, &outSize);
-//
-//            // Copy if the hardware frame fits in your Kotlin buffer
-//            if (outBuf && info.size <= outputCapacity) {
-//
-//            /**
-//              * Mismatch in below
-//              * current info.size = 3110400 or 3.1MB (YUV420P: 1.5-Bytes per pixel),
-//              * While, expectation is RGBA 8888, i.e: 4 bytes per pixel = 8.2MB
-//              */
-//                memcpy(outputData, outBuf + info.offset, info.size);
-//            }
-
-//            // Release back to the hardware pool
-//            AMediaCodec_releaseOutputBuffer(codec, outIdx, false);
 
             // 2. Write the hardware buffer index into the very start of the output ByteBuffer
             auto* outPtr = (int32_t*) outputData;
@@ -125,7 +108,7 @@ public:
             auto* timePtr = (int64_t*) ((uint8_t*)outputData + 8);
             timePtr[0] = (int64_t) info.presentationTimeUs;
 
-            // 3. DO NOT release the output buffer yet!
+
             // We return 0 and wait for ExoPlayer to call render.
             return 0; // Return 0 for success, -1 for error
         }
@@ -143,8 +126,12 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
         jobject thiz,
         jint width,
         jint height,
-        jobject surface             //
+        jobject surface,
+        jstring mime_type           // 👈 Accept jstring (step# 4 of generalizing)
 ) {
+
+    // 4-1. Convert Java string to C++ string safely
+    const char *nativeMimeType = env->GetStringUTFChars(mime_type, nullptr);
 
     // 1. Convert Java Surface to C++ Window
     ANativeWindow* window = nullptr;
@@ -153,23 +140,27 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
     }
 
     // 2. Pass the window into your constructor
-    auto *decoder = new Video_Decoder_JNI(width, height, window);
+    // 4-2. 2. Pass nativeMimeType to your C++ constructor
+    auto *decoder = new Video_Decoder_JNI(width, height, window, nativeMimeType);
 
     // 3. Release our reference (AMediaCodec keeps its own internal reference)
     if (window) {
         ANativeWindow_release(window);
     }
 
+    // 4-3. 🚀 CRITICAL: Release the string memory to prevent leaks!
+    env->ReleaseStringUTFChars(mime_type, nativeMimeType);
+
     // cast @param decoder to kotlin compatible pointer
     auto jLong_ptr = reinterpret_cast<jlong>(decoder);
-
 
     // 🚀 ADD THIS LOG:
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Kotlin: Received Pointer = %lld", jLong_ptr);
 
 
     // STEP B: Cast the C++ memory pointer to a jlong and return it to Kotlin
-    return jLong_ptr;
+//    return jLong_ptr;
+    return reinterpret_cast<jlong>(decoder);
 }
 }
 
@@ -225,11 +216,9 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
         // Silently return -1 so Kotlin knows the hardware is still buffering
         return -1;
     }
-
     return 0;
 }
 }
-
 
 extern "C" {
 JNIEXPORT jint JNICALL
@@ -248,6 +237,18 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
     // We call the destructor or a manual cleanup function
     // This frees the memory and closes the codec
     if (decoder) {
+        // life-Cycle management to clear memory
+        if(decoder->codec) {
+            // Power down the chip and return it to the Android OS
+            __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "=== C++ HARDWARE POWERED DOWN ===");
+
+            AMediaCodec_stop(decoder->codec);
+            AMediaCodec_delete(decoder->codec);
+
+            decoder->codec = nullptr; // 🌟 FIX: Nullify to prevent double-deletion in destructor
+
+        }
+
         // 3. Perform the cleanup (calling the destructor)
         delete decoder;
     }
@@ -261,70 +262,7 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
 extern "C" {
 JNIEXPORT jint JNICALL
 Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_NativeDecoder_renderToSurface(
-
-//        JNIEnv *env, jobject thiz, jlong decoder_ptr, jobject output_buffer, jobject surface
-//        ) {
-//
-//    __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "=== C++ RENDER REACHED ===");
-//
-//    // 2-1. Get the class and fields
-//    jclass outputBufferClass = env->GetObjectClass(output_buffer);
-//    jfieldID dataField = env->GetFieldID(outputBufferClass, "data", "Ljava/nio/ByteBuffer;");
-//
-//    // 2-2 Extract the ByteBuffer pointer
-//    jobject dataBufferObj = env->GetObjectField(output_buffer, dataField);
-//    if(!dataBufferObj) return -1; // Drop frame if buffer is null
-//
-//    auto* decodedPixels = (uint8_t*) env->GetDirectBufferAddress(dataBufferObj);
-//
-//
-//    // Get the physical window
-//    ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
-//    if (!window) return -1;
-//
-//    // 3. FORCE FORMAT: Ensure the buffer allocates 4 bytes per pixel (RGBA_8888)
-//    // Passing 0, 0 keeps the surface's existing width/height
-//    ANativeWindow_setBuffersGeometry(window, 0, 0, WINDOW_FORMAT_RGBA_8888);
-//    ANativeWindow_Buffer windowBuffer;
-//
-//    // 4. LOCK
-//    if (ANativeWindow_lock(window, &windowBuffer, nullptr) == 0) {
-//
-//        // 5. PAINT ROW-BY-ROW (Respecting the stride padding)
-//        // Cast to uint8_t* first so pointer math operates byte-by-byte
-//        auto* destLine = (uint8_t*) windowBuffer.bits;
-//        auto* srcLine = decodedPixels;
-//        int bytePerPixel = 4;   // RGBA_8888
-//
-//        for (int y = 0; y < windowBuffer.height; y++) {
-//            /**
-//             * working solid-Magenta color, instead of moving frames
-//             *
-//             * // Cast the start of the current row back to 32-bit pixels
-//             * auto* pixels = (uint32_t*) destLine;
-//             * for (int x = 0; x < windowBuffer.width; x++) {
-//             *    pixels[x] = 0x2FFF00FF; // RED (AARRGGBB)       // it is working with Solid Magenta color
-//             * }
-//             */
-//
-//            //copy exactly one row of visiable width
-//            memcpy(destLine, srcLine, windowBuffer.width * bytePerPixel);
-//
-//            // Advance the destination pointer by the stride (padding included) in bytes
-//            destLine += (windowBuffer.stride * bytePerPixel);
-//            // Advance the source pointer by the width in bytes (assuming C++ output has no stride padding)
-//            srcLine += (windowBuffer.stride * bytePerPixel);
-//        }
-//
-//        // 6. POST
-//        ANativeWindow_unlockAndPost(window);
-//    }
-//
-//    ANativeWindow_release(window);
-//    return 0;
-//}
-
-    JNIEnv *env, jobject thiz, jlong decoder_ptr, jint out_idx
+        JNIEnv *env, jobject thiz, jlong decoder_ptr, jint out_idx
 ) {
     __android_log_print(ANDROID_LOG_INFO, "JNI_DEBUG", "=== C++ HARDWARE RENDER TRIGGERED ===");
 
@@ -336,5 +274,47 @@ Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_Nati
         AMediaCodec_releaseOutputBuffer(decoder->codec, out_idx, true);
     }
     return 0;
+}
+}
+
+extern "C" {
+JNIEXPORT void JNICALL
+Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_NativeDecoder_flushNative(
+        JNIEnv *env, jobject thiz, jlong decoder_ptr
+) {
+    auto *decoder = reinterpret_cast<Video_Decoder_JNI *>(decoder_ptr);
+    if (decoder && decoder->codec) {
+        // 🚀 Dumps the internal hardware buffers so old frames don't mismatch the new audio clock
+        AMediaCodec_flush(decoder->codec);
+    }
+}
+}
+
+extern "C" {
+JNIEXPORT void JNICALL
+Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_NativeDecoder_dropFrameNative(
+        JNIEnv *env, jobject thiz, jlong decoder_ptr, jint out_idx
+) {
+    auto *decoder = reinterpret_cast<Video_Decoder_JNI *>(decoder_ptr);
+    if (decoder && decoder->codec) {
+        // 🚀 'false' tells the GPU to release the memory WITHOUT painting it
+        AMediaCodec_releaseOutputBuffer(decoder->codec, out_idx, false);
+    }
+}
+}
+
+extern "C" {
+JNIEXPORT void JNICALL
+Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_NativeDecoder_setSurfaceNative(
+        JNIEnv *env, jobject thiz, jlong decoder_ptr, jobject surface
+) {
+    auto *decoder = reinterpret_cast<Video_Decoder_JNI *>(decoder_ptr);
+    if (decoder && decoder->codec && surface != nullptr) {
+        ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
+
+        // 🚀 Dynamically bind the UI to the running hardware chip
+        AMediaCodec_setOutputSurface(decoder->codec, window);
+        ANativeWindow_release(window);
+    }
 }
 }

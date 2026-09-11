@@ -10,10 +10,15 @@ import androidx.media3.decoder.SimpleDecoder
 import androidx.media3.decoder.VideoDecoderOutputBuffer
 import androidx.media3.common.C.BUFFER_FLAG_END_OF_STREAM
 
+/**
+ * @param mimeType 👈 Add the 3rd parameter here,
+ * to configure itself dynamically for H.264, HEVC, VP9, or any other video codec.
+ */
 @OptIn(UnstableApi::class)
 class MyCustomDecoder(
     private val format: Format,
-    private val surface: Surface?
+    private val surface: Surface?,
+    private val mimeType: String
 ) : SimpleDecoder<DecoderInputBuffer, VideoDecoderOutputBuffer, DecoderException>(
     arrayOfNulls(NUM_INPUT_BUFFERS),
     arrayOfNulls(NUM_OUTPUT_BUFFERS)
@@ -38,7 +43,7 @@ class MyCustomDecoder(
         System.loadLibrary("moviesappreview")
 
         // 2. Initialize the C++ engine via the JNI bridge
-        nativeDecoder.init(format.width, format.height, surface)
+        nativeDecoder.init(format.width, format.height, surface, mimeType)
     }
 
     override fun getName(): String = "MyCustomDecoder"
@@ -55,97 +60,16 @@ class MyCustomDecoder(
         return DecoderException("Unexpected decode error", error)
     }
 
-//    override fun decode(
-//        inputBuffer: DecoderInputBuffer,
-//        outputBuffer: VideoDecoderOutputBuffer,
-//        reset: Boolean
-//    ): DecoderException? {
-//
-//        // 1. Manually ensure the output buffer has a ByteBuffer allocated
-//        // We calculate size: Width * Height * 4 (for RGBA_8888)
-//        val width = format.width
-//        val height = format.height
-//
-//        // This function tells ExoPlayer to prepare the buffer for the given size
-////        outputBuffer.init(inputBuffer.timeUs, VideoDecoderOutputBuffer.COLORSPACE_BT2020, null)
-//        outputBuffer.initForYuvFrame(
-//            width,
-//            height,
-//            width,
-//            width / 2,
-//            VideoDecoderOutputBuffer.COLORSPACE_BT2020
-//        )
-//
-//        android.util.Log.d("JNI_DEBUG", "KOTLIN DECODE TRIGGERED")
-//
-//
-//        // 3. Delegate the actual math to the C++ engine
-//
-//        // 3-1. Safety Check: If data is not ready, just skip this frame!
-//        val inputData = inputBuffer.data
-//        val outputData = outputBuffer.data
-//        if (inputData == null || outputData == null) {
-//            // We return null (no exception), but don't call C++.
-//            // This tells ExoPlayer: "Nothing to see here, moving on."
-//            return null
-//        }
-//
-////        val result = nativeDecoder.decode(inputData, outputBuffer = outputBuffer)
-//
-//        // 1. Extract the exact payload size, time, and config flags
-//        val inputSize = inputData.limit()
-//        val timeUs = inputBuffer.timeUs
-//
-//        // 2. Pass them to C++, hardcoding flags to 0
-//        val result = nativeDecoder.decode(
-//            inputSize,
-//            timeUs,
-//            0,
-//            inputData, // 👈 Hardcoded
-//            outputBuffer,
-//            outputData.capacity().toLong()
-//        )
-//
-//        if (result < 0) {
-//            // 1. DO NOT throw DecoderException.
-//            // 2. Silently flag the buffer as decode-only so ExoPlayer drops it but keeps the pipeline alive.
-//            outputBuffer.addFlag(androidx.media3.common.C.BUFFER_FLAG_DECODE_ONLY)
-//            return null
-//        }
-//
-//        // 4. Pass the timing information back to ExoPlayer
-//        outputBuffer.timeUs = inputBuffer.timeUs
-//        outputBuffer.mode = currentOutputMode
-//
-//        // Clear any error flags
-//        outputBuffer.clearFlag(BUFFER_FLAG_END_OF_STREAM)
-//        outputBuffer.addFlag(BUFFER_FLAG_KEY_FRAME) // Mark as a Key Frame
-//
-//        if (result == 0) {
-//            outputBuffer.data!!.order(java.nio.ByteOrder.nativeOrder())
-//
-//        // 1. Read the 64-bit timestamp we saved at byte offset 4
-//        val hardwarePts = outputBuffer.data!!.getLong(4)
-//
-//        // 2. 🚀 Tell ExoPlayer exactly when this frame should be painted
-//        outputBuffer.timeUs = hardwarePts
-//
-//         return null // Success
-//        }
-//
-//        return null
-//    }
-//
-//    override fun release() {
-//        super.release()
-//        nativeDecoder.release()
-//    }
-
     override fun decode(
         inputBuffer: DecoderInputBuffer,
         outputBuffer: VideoDecoderOutputBuffer,
-        reset: Boolean
+        reset: Boolean  // to be used for forwarding / jumping to 15 seconds control
     ): DecoderException? {
+
+        // 1. 🚀 ExoPlayer is telling us a Seek just happened! Dump the C++ hardware memory.
+        if (reset) {
+            nativeDecoder.flush()
+        }
 
         val width = format.width
         val height = format.height
@@ -165,7 +89,9 @@ class MyCustomDecoder(
             VideoDecoderOutputBuffer.COLORSPACE_UNKNOWN
         )
 
-        android.util.Log.d("JNI_DEBUG", "KOTLIN DECODE TRIGGERED")
+        // try to avoid crash
+        // "ava.util.ArrayDeque.grow with the tag com.amazon.device.crashmanager.AppFileArtifactSource"
+        // android.util.Log.d("JNI_DEBUG", "KOTLIN DECODE TRIGGERED")
 
         val inputData = inputBuffer.data
         val outputData = outputBuffer.data
@@ -186,8 +112,11 @@ class MyCustomDecoder(
             capacity = outputData.capacity().toLong()
         )
 
-        // 3. Hardware is buffering
+        // (Drop Frame) Checkpoint 1: Hardware is buffering (no output frame produced)
         if (result < 0) {
+            outputBuffer.data?.order(java.nio.ByteOrder.nativeOrder())
+            outputBuffer.data?.putInt(0, -1) // Clear stale index from recycled buffer
+
             // Safe to ignore deprecation. Tells ExoPlayer to drop the frame but keep the clock alive.
             @Suppress("DEPRECATION")
             outputBuffer.addFlag(androidx.media3.common.C.BUFFER_FLAG_DECODE_ONLY)
@@ -195,7 +124,11 @@ class MyCustomDecoder(
         }
 
         // 4. Hardware Success! Pass the ExoPlayer timestamp forward to unblock the clock
-        outputBuffer.mode = currentOutputMode
+//        outputBuffer.mode = currentOutputMode
+
+        // 🚀 Force ExoPlayer to treat this as a hardware surface ticket!
+        outputBuffer.mode = androidx.media3.common.C.VIDEO_OUTPUT_MODE_SURFACE_YUV
+
 
         // 1. Ensure the bytes are read in the correct processor order
         outputBuffer.data!!.order(java.nio.ByteOrder.nativeOrder())
@@ -214,9 +147,29 @@ class MyCustomDecoder(
         return null
     }
 
+    // (Drop Frame) Checkpoint 2: Frame returned to pool without being rendered
+    override fun releaseOutputBuffer(outputBuffer: VideoDecoderOutputBuffer) {
+        val data = outputBuffer.data
+        if (data != null && data.limit() >= 4) {
+            data.order(java.nio.ByteOrder.nativeOrder())
+            val outIdx = data.getInt(0)
+
+            // 🚀 If the index is still >= 0, ExoPlayer dropped the frame!
+            // We MUST return the ticket to C++ so the hardware doesn't starve.
+            if (outIdx >= 0) {
+                nativeDecoder.dropFrame(outIdx) // Calls C++ AMediaCodec_releaseOutputBuffer(..., false)
+                data.putInt(0, -1);     // wipe it clean, released
+            }
+
+        }
+
+        // Let ExoPlayer recycle the Kotlin wrapper
+        super.releaseOutputBuffer(outputBuffer)
+    }
+
     override fun release() {
-        super.release()
-        nativeDecoder.release()
+        super.release()         // 1. Let ExoPlayer clear its Java memory pools
+        nativeDecoder.release() // 2. Tell C++ to destroy the hardware chip
     }
 
 }
