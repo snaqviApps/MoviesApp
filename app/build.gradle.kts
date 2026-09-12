@@ -14,7 +14,8 @@ android {
 
     defaultConfig {
         applicationId = "edu.review.moviesappreview"
-        minSdk = 25
+//        minSdk = 25
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -22,6 +23,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val properties = Properties()
         val localPropertiesFile = project.rootProject.file("local.properties")
+        externalNativeBuild {
+            cmake {
+                cppFlags += ""
+            }
+        }
         if (localPropertiesFile.exists()) {
             properties.load(localPropertiesFile.inputStream())
             buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY")}\"")
@@ -45,9 +51,19 @@ android {
         compose = true
         buildConfig = true
     }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 }
 
 dependencies {
+
+     //Test
+     testImplementation(libs.kotlinx.coroutines.test)
+
     implementation(libs.androidx.compose.foundation)
 
     // Coroutines

@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.presentation.screen.camerascream
+package edu.review.moviesappreview.presentation.screen.cameraresults
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

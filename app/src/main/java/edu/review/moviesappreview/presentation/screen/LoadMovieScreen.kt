@@ -17,73 +17,73 @@ fun LoadMovieScreen(
     onMovieView: @Composable (isPopular: Boolean) -> Unit,
     viewModel: MoviesViewModel
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Card(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
-            Box (
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (viewModel.showMovies) {
-                    onMovieView(viewModel.showMovies)
-                }
+            if (viewModel.showMovies) {
+                onMovieView(viewModel.showMovies)
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 6.dp, end = 6.dp, bottom = 4.dp),
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Spacer(modifier = Modifier.size(2.dp))
-                Button(
-                    onClick = { viewModel.enableMoviesDataFetching("top_rated") },
-                    modifier = Modifier.weight(0.33f)
-                ) {
-                    Text(text = "Top Rated")
-                }
-                Spacer(modifier = Modifier.size(4.dp))
-                Button(
-                    onClick = { viewModel.enableMoviesDataFetching("now_playing") },
-                    modifier = Modifier.weight(0.33f)
-                ) {
-                    Text(text = "Now Playing")
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 6.dp, end = 6.dp, bottom = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { viewModel.enableMoviesDataFetching("popular") },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) {
-                    Text("Popular")
-                }
-            }
-            Row(modifier = Modifier
+        }
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 6.dp, end = 6.dp, bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Button(
-                    onClick = { viewModel.enableExoPlayerDefaults() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ){
-                    Text("Launch ExoPlayer")
-                }
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Spacer(modifier = Modifier.size(2.dp))
+            Button(
+                onClick = { viewModel.enableMoviesDataFetching("top_rated") },
+                modifier = Modifier.weight(0.33f)
+            ) {
+                Text(text = "Top Rated")
+            }
+            Spacer(modifier = Modifier.size(4.dp))
+            Button(
+                onClick = { viewModel.enableMoviesDataFetching("now_playing") },
+                modifier = Modifier.weight(0.33f)
+            ) {
+                Text(text = "Now Playing")
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 6.dp, end = 6.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = { viewModel.enableMoviesDataFetching("popular") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
+                Text("Popular")
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 6.dp, end = 6.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = { viewModel.enableExoPlayerDefaults() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+            ) {
+                Text("Launch ExoPlayer")
             }
         }
     }

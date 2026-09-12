@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import edu.review.moviesappreview.R
 import edu.review.moviesappreview.data.movies.Result
-import edu.review.moviesappreview.presentation.MovieUIState
+import edu.review.moviesappreview.presentation.MoviesUIState
 import androidx.compose.ui.text.font.FontFamily
 
 
@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontFamily
 fun MovieCard(
     modifier: Modifier = Modifier,
     endPoint: String,
-    mState: MovieUIState.Success
+    mState: MoviesUIState.Success
 ) {
     Card(
         modifier = modifier
@@ -64,7 +64,7 @@ fun MovieCard(
                 .weight(1f)
                 .padding(4.dp),
                     // FIX 2: This replaces manual column spacers! It builds a perfect 16dp gap BETWEEN items.d
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(mState.moviesList) { result ->
                 Column(
@@ -133,7 +133,7 @@ fun MovieCard(
 fun PreviewMovieCard() {
     MovieCard(
         endPoint = "popular",
-        mState = MovieUIState.Success(
+        mState = MoviesUIState.Success(
             moviesList = listOf(
                 Result(
                     adult = false,

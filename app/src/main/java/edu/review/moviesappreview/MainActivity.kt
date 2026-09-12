@@ -19,13 +19,16 @@ import edu.review.moviesappreview.presentation.screen.system.PowerStatusScreen
 import edu.review.moviesappreview.ui.theme.MoviesAppReviewTheme
 import edu.review.moviesappreview.util.checkAndRequestNotificationPermission
 
-
-
 @AndroidEntryPoint
-//@InstallIn(SingletonComponent::class)
 class MainActivity : ComponentActivity() {
 
-    val nameIn by lazy { localClassName }
+    // 👈 ADD THIS DECLARATION
+    private external fun doNotAnyThing()
+
+    // Sample JNI C++ Bridge test
+    init {
+        System.loadLibrary("moviesappreview")
+    }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -37,10 +40,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        doNotAnyThing()
 
         // PHASE 1: Run OS/Activity Level Setup
         checkAndRequestNotificationPermission(

@@ -1,7 +1,11 @@
-This App displays a list of movies from the TMDB API, with 03 endpoints
- - Popular
- - Top Rated
- - Now Playing
+<H3><u></u>Application Main Idea</u></H3>
+
+1. This App displays a list of movies from the TMDB API, with the race-winner among top-two endpoints, given below:
+   - Popular
+   - Top Rated
+   - Now Playing
+
+2. It also implements the <img src="https://dummyimage.com/600x32/FFFF00/000000.png&text=JNI+for+video+codes,+Genaralized [H.264 (AVC), H.265, VP9 and more]" alt="Sample Banner" />
 
 App flows by Initializing with TMDB integration, and gives user options using CTAs to select the end points
 as mentioned above
@@ -58,15 +62,16 @@ ChangeList:
 - The new implementation in MoviesViewModel utilizes a "racing" pattern to fetch movie data from two different endpoints simultaneously, opting for the result that arrives first.
 Key Components:
 
-1. async { ... }: Launches two concurrent coroutines.
+1. <b>async</b> { ... }: Launches two concurrent coroutines.
    popularDeferred: Fetches movies based on the provided endPoint (defaults to "popular"). topRatedDeferred: Fetches movies from the "top_rated" endpoint.
 
-2. select { ... }: Acts as a race coordinator. 
+2. <b>select</b> { ... }: Acts as a race coordinator. 
    onAwait: Suspends until the first Deferred completes. Cancellation: Immediately cancels the "loser" coroutine (topRatedDeferred.cancel() or popularDeferred.cancel()) to save resources.
 
 3. Broadcast Integration: Dispatches a MovieBroadcastReceiver.ACTION_RACE_COMPLETE intent, allowing other parts of the app to react to the winner.
 
-Implementation Details:
+<b>Implementation Details</b>:
+
 • Structured Concurrency: Wrapped in coroutineScope to ensure that if the parent viewModelScope is cancelled, all internal async tasks are also cleaned up.
 • State Management: Updates _moviesState with the winner's data and sets currentEndPoint to reflect the winning category.
 • Error Handling: Catches exceptions and updates the UI state to MovieUIState.Error, while properly re-throwing CancellationException to maintain coroutine hygiene.
@@ -76,7 +81,35 @@ Observations & Recommendations:
 • Resource Usage: While it doubles the initial request count, the immediate cancellation of the slower request mitigates unnecessary data usage.
 • Scalability: This pattern can be extended to more than two sources if needed (e.g., racing multiple mirrors or cache vs. network).
 
+--------------------------
+<b> Branch: fatestMovie-useCase-unitTesting</b>
 
+1. 10x–100x Faster Unit Tests (Pure JVM Execution)
+   - Previous: Testing ViewModels or Use Cases required mocking concrete MoviesRepository, Retrofit Response<T> wrappers,            
+     or initializing Application contexts, forcing slow Robolectric runs or heavy reflection mocks.
+
+   - Refactored: Dependencies are abstract Kotlin interfaces. You can pass a lightweight FakeMoviesRepository in pure JVM tests that execute in milliseconds 
+     without launching an Android framework instance or mocking network frameworks.
+
+2. Zero-Impact Data Layer Swaps (Modularization Readiness)
+   - Previous: Changes to Retrofit annotations, endpoint DTO schemas, or response envelopes leaked directly into 
+     ViewModels, forcing UI re-engineering whenever backend models shifted.
+   
+   - Refactored: The Domain layer dictates IMoviesRepository. You can swap Retrofit for Ktor, migrate from Gson 
+     to KotlinX Serialization, or introduce Room database caching in MoviesRepository without touching or recompiling GetFastestMovieFeedUseCase or MoviesViewModel.
+
+3. 100% Business Logic Reusability Across Screens and Platforms 
+   - Previous: Race conditions, endpoint timing, and cancellation rules were bound inside a specific screen's ViewModel, forcing code duplication if a second screen or background service needed the fastest movie feed.
+
+   - Refactored: Complex orchestration resides exclusively in GetFastestMovieFeedUseCase. Mobile ViewModels, 
+     TV UIs, or shared Kotlin Multiplatform (KMP) targets can execute the exact same racing logic while keeping 
+     ViewModels minimal and focused strictly on driving UI state.
+
+--------------------------
+<b> Branch: JNI-C++-codebase</b> 
+
+
+--------------------------
 
 <table>
   <!-- Row 1: Titles -->
@@ -95,6 +128,23 @@ Observations & Recommendations:
     </td>
     <td valign="top">
       <img width="1080" height="2400" alt="Screenshot_20260801_104858" src="https://github.com/user-attachments/assets/93359dfd-dd61-4a99-bc0a-5e27b424e36f" />
+    </td>
+  </tr>
+ <!-- Row 3: Images -->
+ <tr>
+  <td align="center" valign="bottom">
+      <b>Displays Pre-Decoding solid Green View</b>
+  </td>
+  <td>
+   <b> Video decoding (1 to 4Bytes) i.e: YUV to RGBA misalignment</b>
+  </td>
+ </tr>
+  <tr>
+    <td valign="top">
+     <img width="1080" height="2400" alt="Screenshot_20260908_040020" src="https://github.com/user-attachments/assets/2558da4f-1188-4e35-b37d-841f6388afed" />
+    </td>
+    <td>
+     <img width="1080" height="2400" alt="pattern_dueto YUV_RGBA_incorrect_mapping" src="https://github.com/user-attachments/assets/d4cfc716-794e-4374-9ee3-722bc0f8e99c" />
     </td>
   </tr>
 </table>
