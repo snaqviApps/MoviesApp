@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.presentation.screen.camerascream.exonative
+package edu.review.moviesappreview.presentation.screen.cameraresults.exonative
 
 import android.content.Context
 import androidx.annotation.OptIn
@@ -23,9 +23,8 @@ class MyRenderersFactory(context: Context) : DefaultRenderersFactory(context) {
         out: ArrayList<Renderer>
     ) {
         // Add your custom C++ backed renderer to the list of available renderers
-        out.add(
-            MyCustomVideoRenderer(eventHandler, eventListener)
-        )
+//        out.add(0, MyCustomVideoRenderer(eventHandler, eventListener))
+        out.add(MyCustomVideoRenderer(eventHandler, eventListener))
 
         // Call super so ExoPlayer still adds standard hardware renderers as a fallback
         super.buildVideoRenderers(

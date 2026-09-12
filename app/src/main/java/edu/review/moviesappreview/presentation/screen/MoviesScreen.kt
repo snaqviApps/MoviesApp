@@ -17,8 +17,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.presentation.viewmodel.MoviesViewModel
-import edu.review.moviesappreview.presentation.screen.camerascream.SecurityCameraScreen
-import edu.review.moviesappreview.presentation.screen.camerascream.VideoPlayerDialog
+import edu.review.moviesappreview.presentation.screen.cameraresults.SecurityCameraScreen
+import edu.review.moviesappreview.presentation.screen.cameraresults.VideoPlayerDialog
 import edu.review.moviesappreview.util.testStreamUrl
 
 @Composable

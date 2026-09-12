@@ -55,7 +55,7 @@ class MoviesViewModel @Inject constructor (
             result.onSuccess { (movies, winnerEndPoint) ->
                 currentEndPoint = winnerEndPoint
                 _moviesState.update {
-                    MoviesUIState.Success(moviesList = movies, endPoint = winnerEndPoint)
+                    MoviesUIState.Success(moviesList = movies, endPoint = currentEndPoint)
                 }
                 moviesNotifier.notifyRaceWinnerBroadcast(winnerEndPoint)
             }.onFailure { exception ->

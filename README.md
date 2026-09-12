@@ -130,4 +130,21 @@ Observations & Recommendations:
       <img width="1080" height="2400" alt="Screenshot_20260801_104858" src="https://github.com/user-attachments/assets/93359dfd-dd61-4a99-bc0a-5e27b424e36f" />
     </td>
   </tr>
+ <!-- Row 3: Images -->
+ <tr>
+  <td align="center" valign="bottom">
+      <b>Displays Pre-Decoding solid Green View</b>
+  </td>
+  <td>
+   <b> Video decoding (1 to 4Bytes) i.e: YUV to RGBA misalignment</b>
+  </td>
+ </tr>
+  <tr>
+    <td valign="top">
+     <img width="1080" height="2400" alt="Screenshot_20260908_040020" src="https://github.com/user-attachments/assets/2558da4f-1188-4e35-b37d-841f6388afed" />
+    </td>
+    <td>
+     <img width="1080" height="2400" alt="pattern_dueto YUV_RGBA_incorrect_mapping" src="https://github.com/user-attachments/assets/d4cfc716-794e-4374-9ee3-722bc0f8e99c" />
+    </td>
+  </tr>
 </table>

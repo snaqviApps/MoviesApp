@@ -10,7 +10,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.selects.select
 import javax.inject.Inject
-import kotlin.collections.emptyList
 
 class GetFastestMovieFeedUseCase @Inject constructor(
     private val moviesRepository: MoviesRepository<Movies>
@@ -53,7 +52,7 @@ class GetFastestMovieFeedUseCase @Inject constructor(
 
         // Maps correctly returns List<MovieResult>
         winnerResponse.map { movies ->
-            Pair(movies.results ?: emptyList<MoviesResult>(), winnerEndPoint)
+            Pair(movies.results, winnerEndPoint)
         }
     }
 }
