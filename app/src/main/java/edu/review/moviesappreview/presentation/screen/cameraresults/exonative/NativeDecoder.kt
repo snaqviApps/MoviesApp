@@ -34,7 +34,10 @@ class NativeDecoder {
      *
      */
     private external fun initNative(
-        width: Int, height: Int, surface: Surface?, mimeType: String
+        width: Int,
+        height: Int,
+        surface: Surface?,
+        mimeType: String
     ): Long
 
     fun init(width: Int, height: Int, surface: Surface?, mimeType: String) {

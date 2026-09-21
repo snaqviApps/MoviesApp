@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,11 +20,9 @@ import edu.review.moviesappreview.presentation.screen.system.PowerStatusScreen
 import edu.review.moviesappreview.ui.theme.MoviesAppReviewTheme
 import edu.review.moviesappreview.util.checkAndRequestNotificationPermission
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    // 👈 ADD THIS DECLARATION
-    private external fun doNotAnyThing()
 
     // Sample JNI C++ Bridge test
     init {
@@ -44,8 +43,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        doNotAnyThing()
-
         // PHASE 1: Run OS/Activity Level Setup
         checkAndRequestNotificationPermission(
             this,
@@ -58,14 +55,14 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.LightGray
-                ) { innerPadding ->
-
+                )
+                { innerPadding ->
                     // PowerStatusScreen lives here safely inside the Compose tree.
                     // Because it has no visible layout (it only contains the DisposableEffect),
                     // it sits here invisibly acting as your background listener.
                     PowerStatusScreen()
-
                     MoviesScreen(
+                        innerPadding = innerPadding,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding)
@@ -82,8 +79,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     MoviesAppReviewTheme {
-        MoviesScreen(
-            modifier = Modifier
-        )
+        Modifier.padding()
     }
 }

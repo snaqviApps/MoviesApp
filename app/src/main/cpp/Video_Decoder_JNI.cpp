@@ -119,7 +119,6 @@ public:
 
 // 2. The JNI function called from Kotlin's NativeDecoder.initNative()
 extern "C" {
-//[[maybe_unused]] JNIEXPORT jlong JNICALL
 JNIEXPORT jlong JNICALL
 Java_edu_review_moviesappreview_presentation_screen_cameraresults_exonative_NativeDecoder_initNative(
         JNIEnv *env,

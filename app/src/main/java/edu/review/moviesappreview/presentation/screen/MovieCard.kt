@@ -14,7 +14,6 @@ import androidx.compose.material3.CardDefaults.cardColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -30,14 +29,11 @@ import coil.compose.AsyncImage
 import edu.review.moviesappreview.R
 import edu.review.moviesappreview.data.movies.Result
 import edu.review.moviesappreview.presentation.MoviesUIState
-import androidx.compose.ui.text.font.FontFamily
-
 
 @Composable
 fun MovieCard(
     modifier: Modifier = Modifier,
-    endPoint: String,
-    mState: MoviesUIState.Success
+    mState: MoviesUIState.Success,
 ) {
     Card(
         modifier = modifier
@@ -45,94 +41,86 @@ fun MovieCard(
             .padding(top = 6.dp, bottom = 2.dp, start = 6.dp, end = 6.dp),
         colors = cardColors(containerColor = Color.Transparent)
     ) {
-        Text(
-            modifier = Modifier
-                .padding(top = 4.dp, bottom = 14.dp)
-                .align(Alignment.CenterHorizontally),
-            text = endPoint.replace("_", " ").split(" ")
-                .joinToString(" ") { ch -> ch.replaceFirstChar { it.uppercase() } },
-            style = TextStyle(
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Default
-            )
-        )
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(4.dp),
-                    // FIX 2: This replaces manual column spacers! It builds a perfect 16dp gap BETWEEN items.d
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            items(mState.moviesList) { result ->
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        // FIX 2 & 3: Clip first so the image inherits rounded corners, then apply background
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(color = MaterialTheme.colorScheme.surface)
-
+                        .weight(1f)
+                        .padding(4.dp),
+                    // FIX 2: This replaces manual column spacers! It builds a perfect 16dp gap BETWEEN items.d
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    result.backdropPath?.let { path ->
-                        AsyncImage(
-                            model = "https://image.tmdb.org/t/p/w780$path",
-                            contentDescription = "Thumbnail",
-                            placeholder = painterResource(R.drawable.outline_movie_24),
+                    items(mState.moviesList) { result ->
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(170.dp),
+                                // FIX 2 & 3: Clip first so the image inherits rounded corners, then apply background
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(color = MaterialTheme.colorScheme.surface)
 
-                            contentScale = ContentScale.Crop
-                        )
+                        ) {
+                            result.backdropPath?.let { path ->
+                                AsyncImage(
+                                    model = "https://image.tmdb.org/t/p/w780$path",
+                                    contentDescription = "Thumbnail",
+                                    placeholder = painterResource(R.drawable.outline_movie_24),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(170.dp),
+
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            result.title?.let {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    text = it,
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                            }
+                            Spacer(Modifier.height(3.dp))
+                            result.originalLanguage?.let { text ->
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    text = "Language: $text",
+                                    style = TextStyle(
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                            }
+                            result.overview?.let { text ->
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    text = text,
+                                    style = TextStyle(
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    maxLines = 5,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    result.title?.let {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                            text = it,
-                            style = TextStyle(
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                    }
-                    Spacer(Modifier.height(3.dp))
-                    result.originalLanguage?.let { text ->
-                        Text(
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                            text = "Language: $text",
-                            style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        )
-                    }
-                    result.overview?.let { text ->
-                        Text(
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                            text = text,
-                            style = TextStyle(
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            maxLines = 5,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+
                 }
+
             }
+//        }
 
-        }
-
-    }
+//    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMovieCard() {
     MovieCard(
-        endPoint = "popular",
         mState = MoviesUIState.Success(
             moviesList = listOf(
                 Result(
@@ -153,6 +141,6 @@ fun PreviewMovieCard() {
                     voteCount = 0
                 )
             )
-        ),
+        )
     )
 }
