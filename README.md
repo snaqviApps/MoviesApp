@@ -124,7 +124,7 @@ Observations & Recommendations:
   <!-- Row 2: Images -->
   <tr>
     <td valign="top">
-      <img width="1080" height="2400" alt="Screenshot_20260801_104759" src="https://github.com/user-attachments/assets/ffc7e18f-d8d2-4313-9e60-4bbe427678a3" />
+     <img width="1080" height="2400" alt="image" src="https://github.com/user-attachments/assets/23e1ecb9-890f-45ae-8e66-9437c6ae8eff" />
     </td>
     <td valign="top">
       <img width="1080" height="2400" alt="Screenshot_20260801_104858" src="https://github.com/user-attachments/assets/93359dfd-dd61-4a99-bc0a-5e27b424e36f" />
