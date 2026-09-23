@@ -1,7 +1,6 @@
 package edu.review.moviesappreview.presentation.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,8 +45,6 @@ fun MovieCard(
                         .fillMaxWidth()
                         .weight(1f)
                         .padding(4.dp),
-                    // FIX 2: This replaces manual column spacers! It builds a perfect 16dp gap BETWEEN items.d
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     items(mState.moviesList) { result ->
                         Column(
@@ -55,9 +52,30 @@ fun MovieCard(
                                 .fillMaxWidth()
                                 // FIX 2 & 3: Clip first so the image inherits rounded corners, then apply background
                                 .clip(MaterialTheme.shapes.medium)
-                                .background(color = MaterialTheme.colorScheme.surface)
-
+//                                .background(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .background(color = MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.5f))
                         ) {
+                            result.title?.let {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(start = 6.dp, top = 4.dp, bottom = 8.dp),
+                                    text = it,
+                                    style = TextStyle(
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        lineHeight = 20.sp,
+//                                        platformStyle = PlatformTextStyle(
+//                                            includeFontPadding = false // <--- Removes the invisible safety padding
+//                                        ),
+                                        color = MaterialTheme.colorScheme.primaryFixed.copy(
+                                            alpha = 2.5f,
+                                            red = 4.2f,
+                                            blue = 1.5f,
+                                            green = 1.5f
+                                        )
+                                    )
+                                )
+                            }
                             result.backdropPath?.let { path ->
                                 AsyncImage(
                                     model = "https://image.tmdb.org/t/p/w780$path",
@@ -65,56 +83,47 @@ fun MovieCard(
                                     placeholder = painterResource(R.drawable.outline_movie_24),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(170.dp),
-
-                                    contentScale = ContentScale.Crop
+                                        .padding(2.dp),
+                                    contentScale = ContentScale.Crop,
                                 )
                             }
-                            Spacer(Modifier.height(8.dp))
-                            result.title?.let {
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 4.dp),
-                                    text = it,
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                )
-                            }
-                            Spacer(Modifier.height(3.dp))
                             result.originalLanguage?.let { text ->
                                 Text(
-                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                                     text = "Language: $text",
                                     style = TextStyle(
-                                        fontSize = 12.sp,
+                                        fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 )
                             }
                             result.overview?.let { text ->
                                 Text(
-                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 4.dp,
+                                        vertical = 3.dp
+                                    ),
                                     text = text,
                                     style = TextStyle(
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Normal,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.primaryFixed.copy(
+                                            alpha = 2.5f,
+                                            red = 4.2f,
+                                            blue = 1.5f,
+                                            green = 1.5f
+                                        )
                                     ),
                                     maxLines = 5,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
+                        Spacer(Modifier.height(12.dp))
                     }
 
                 }
-
             }
-//        }
 
-//    }
 }
 
 @Preview(showBackground = true)
@@ -131,7 +140,7 @@ fun PreviewMovieCard() {
                     title = "Sample Movie",
                     originalLanguage = "en",
                     originalTitle = "Sample Movie",
-                    overview = "Overview",
+                    overview = "Overview, Dummy Data, color composition",
                     popularity = 0.0,
                     posterPath = null,
                     releaseDate = null,
