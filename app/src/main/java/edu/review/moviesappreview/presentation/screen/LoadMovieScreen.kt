@@ -31,13 +31,12 @@ fun LoadMovieScreen(
                 modifier = Modifier
                     .padding(
                         start = 32.dp,
-                        top = innerPadding.calculateTopPadding() + 24.dp
+                        top = innerPadding.calculateTopPadding() + 28.dp
                     ),
                 text = endPoint.replace("_", " ").split(" ")
                     .joinToString(" ") { ch -> ch.replaceFirstChar { it.uppercase() } },
                 textAlign = TextAlign.Center,
                 style = TextStyle(
-//                    textAlign = TextAlign.End,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Default
@@ -46,7 +45,11 @@ fun LoadMovieScreen(
         }
     ) { scaffoldPadding ->
         Column(
-            modifier = Modifier.padding(scaffoldPadding),
+            modifier = Modifier
+                .padding(
+                    top = scaffoldPadding.calculateTopPadding() - 28.dp,
+                    bottom = scaffoldPadding.calculateBottomPadding()
+                ),
         ) {
             Card(
                 modifier = Modifier

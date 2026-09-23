@@ -49,5 +49,5 @@ abstract class MoviesRepositoryModule {
     @Singleton
     abstract fun bindMoviesRepository(
         defaultMoviesRepository: DefaultMoviesRepository
-    ): MoviesRepository<Movies>
+    ): MoviesRepository
 }

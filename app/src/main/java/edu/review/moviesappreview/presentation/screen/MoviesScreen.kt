@@ -38,7 +38,8 @@ fun MoviesScreen(
                 is MoviesUIState.Success -> {
                     MovieCard(
                         // FIX 2: Use a clean, fresh Modifier here so it fills the Box perfectly!
-                        modifier = Modifier.fillMaxSize().padding(innerPadding),
+                        modifier = Modifier.fillMaxSize()
+                            .padding(innerPadding),
                         mState = mState
                     )
 

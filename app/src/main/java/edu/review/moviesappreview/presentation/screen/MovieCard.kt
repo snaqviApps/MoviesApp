@@ -28,6 +28,8 @@ import coil.compose.AsyncImage
 import edu.review.moviesappreview.R
 import edu.review.moviesappreview.data.movies.Result
 import edu.review.moviesappreview.presentation.MoviesUIState
+import edu.review.moviesappreview.util.imageUrl
+
 
 @Composable
 fun MovieCard(
@@ -50,23 +52,20 @@ fun MovieCard(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
+
                                 // FIX 2 & 3: Clip first so the image inherits rounded corners, then apply background
                                 .clip(MaterialTheme.shapes.medium)
-//                                .background(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                                 .background(color = MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.5f))
                         ) {
                             result.title?.let {
                                 Text(
                                     modifier = Modifier
-                                        .padding(start = 6.dp, top = 4.dp, bottom = 8.dp),
+                                        .padding(start = 6.dp, top = 4.dp, bottom = 6.dp),
                                     text = it,
                                     style = TextStyle(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         lineHeight = 20.sp,
-//                                        platformStyle = PlatformTextStyle(
-//                                            includeFontPadding = false // <--- Removes the invisible safety padding
-//                                        ),
                                         color = MaterialTheme.colorScheme.primaryFixed.copy(
                                             alpha = 2.5f,
                                             red = 4.2f,
@@ -78,7 +77,7 @@ fun MovieCard(
                             }
                             result.backdropPath?.let { path ->
                                 AsyncImage(
-                                    model = "https://image.tmdb.org/t/p/w780$path",
+                                    model = "$imageUrl$path",
                                     contentDescription = "Thumbnail",
                                     placeholder = painterResource(R.drawable.outline_movie_24),
                                     modifier = Modifier
@@ -118,7 +117,7 @@ fun MovieCard(
                                 )
                             }
                         }
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(6.dp))
                     }
 
                 }

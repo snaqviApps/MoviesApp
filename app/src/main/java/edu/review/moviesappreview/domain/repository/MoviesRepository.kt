@@ -11,7 +11,8 @@ import edu.review.moviesappreview.data.movies.Movies
  * it just promises to provide Movies.
  *
  */
-interface MoviesRepository<out T : Movies> : DataSource<T> {
+//interface MoviesRepository<out T : Movies> : DataSource<T> {  // -----> same as below line
+interface MoviesRepository : DataSource<Movies> {
     suspend fun getMovies(
         defaultCategory: String,
         apiKey: String,

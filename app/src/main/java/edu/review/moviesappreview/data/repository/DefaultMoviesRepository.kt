@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class DefaultMoviesRepository @Inject constructor (
     private val movieRemoteSource: MovieRemoteSource
-) : MoviesRepository<Movies> {
+) : MoviesRepository {
     override suspend fun getMovies(
         defaultCategory: String,
         apiKey: String,

@@ -12,7 +12,7 @@ import kotlinx.coroutines.selects.select
 import javax.inject.Inject
 
 class GetFastestMovieFeedUseCase @Inject constructor(
-    private val moviesRepository: MoviesRepository<Movies>
+    private val moviesRepository: MoviesRepository
 ) {
     suspend fun execute(
         defaultCategory: String,
