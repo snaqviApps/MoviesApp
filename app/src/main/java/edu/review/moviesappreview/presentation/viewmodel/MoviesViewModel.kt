@@ -6,11 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.review.moviesappreview.data.movies.Result as MoviesResult
 import edu.review.moviesappreview.BuildConfig
 import edu.review.moviesappreview.data.repository.system.MoviesNotifierRepository
+import edu.review.moviesappreview.domain.data.Movie
 import edu.review.moviesappreview.presentation.MoviesUIState
-import edu.review.moviesappreview.usecase.GetFastestMovieFeedUseCase
+import edu.review.moviesappreview.domain.usecase.GetFastestMovieFeedUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +46,7 @@ class MoviesViewModel @Inject constructor (
         viewModelScope.launch {
             if (!showMovies) return@launch
 
-            val result: Result<Pair<List<MoviesResult>, String>> =
+            val result: Result<Pair<List<Movie>, String>> =
                 getFastestMovieFeedUseCase.execute(
                     defaultCategory = endPoint,
                     apiKey = BuildConfig.API_KEY,

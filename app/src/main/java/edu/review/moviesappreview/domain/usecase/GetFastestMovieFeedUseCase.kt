@@ -1,10 +1,9 @@
-package edu.review.moviesappreview.usecase
+package edu.review.moviesappreview.domain.usecase
 
 import android.util.Log
 import edu.review.moviesappreview.BuildConfig
-import edu.review.moviesappreview.data.movies.Movies
+import edu.review.moviesappreview.domain.data.Movie
 import edu.review.moviesappreview.domain.repository.MoviesRepository
-import edu.review.moviesappreview.data.movies.Result as MoviesResult    // Alias prevents collision with kotlin.Result
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -18,17 +17,18 @@ class GetFastestMovieFeedUseCase @Inject constructor(
         defaultCategory: String,
         apiKey: String,
         page: Int
-    ): Result<Pair<List<MoviesResult>, String>> = coroutineScope {
+    ): Result<Pair<List<Movie>, String>> = coroutineScope {
 
         val startTime = System.currentTimeMillis()
-        val popularDeferred: Deferred<Result<Movies>> = async {
+//        val popularDeferred: Deferred<Result<Movies>> = async {
+        val popularDeferred: Deferred<Result<List<Movie>>> = async {
             moviesRepository.getMovies(
                 defaultCategory = defaultCategory,
                 apiKey = BuildConfig.API_KEY,
                 page = 5
             )
         }
-        val topRatedDeferred: Deferred<Result<Movies>> = async {
+        val topRatedDeferred: Deferred<Result<List<Movie>>> = async {
             moviesRepository.getMovies(
                 defaultCategory = "top_rated",
                 apiKey = BuildConfig.API_KEY,
@@ -51,8 +51,8 @@ class GetFastestMovieFeedUseCase @Inject constructor(
         Log.d("winnerTime", "winnerTime: ${endTime - startTime}")
 
         // Maps correctly returns List<MovieResult>
-        winnerResponse.map { movies ->
-            Pair(movies.results, winnerEndPoint)
+        winnerResponse.map { movie ->
+            Pair(movie, winnerEndPoint)
         }
     }
 }

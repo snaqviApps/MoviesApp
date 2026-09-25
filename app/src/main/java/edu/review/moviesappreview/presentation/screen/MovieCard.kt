@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import edu.review.moviesappreview.R
-import edu.review.moviesappreview.data.movies.Result
+import edu.review.moviesappreview.domain.data.Movie
 import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.util.imageUrl
 
@@ -131,22 +131,13 @@ fun PreviewMovieCard() {
     MovieCard(
         mState = MoviesUIState.Success(
             moviesList = listOf(
-                Result(
-                    adult = false,
+                Movie(
                     backdropPath = "/sample.jpg",
-                    genreIds = emptyList(),
                     id = 1,
                     title = "Sample Movie",
                     originalLanguage = "en",
-                    originalTitle = "Sample Movie",
                     overview = "Overview, Dummy Data, color composition",
-                    popularity = 0.0,
                     posterPath = null,
-                    releaseDate = null,
-                    softcore = false,
-                    video = false,
-                    voteAverage = 0.0,
-                    voteCount = 0
                 )
             )
         )

@@ -1,6 +1,6 @@
 package edu.review.moviesappreview.domain.repository
 
-import edu.review.moviesappreview.data.movies.Movies
+import edu.review.moviesappreview.domain.data.Movie
 
 
 /**
@@ -12,10 +12,10 @@ import edu.review.moviesappreview.data.movies.Movies
  *
  */
 //interface MoviesRepository<out T : Movies> : DataSource<T> {  // -----> same as below line
-interface MoviesRepository : DataSource<Movies> {
+interface MoviesRepository : DataSource<Movie> {
     suspend fun getMovies(
         defaultCategory: String,
         apiKey: String,
         page: Int
-    ): Result<Movies>
+    ): Result<List<Movie>>
 }
