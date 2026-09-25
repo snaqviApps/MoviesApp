@@ -1,6 +1,6 @@
 package edu.review.moviesappreview.presentation.viewmodel
 
-import edu.review.moviesappreview.domain.PowerState
+import edu.review.moviesappreview.domain.model.PowerState
 import edu.review.moviesappreview.domain.repository.PowerRepository
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers

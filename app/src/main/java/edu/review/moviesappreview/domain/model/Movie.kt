@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.domain.data
+package edu.review.moviesappreview.domain.model
 
 /**
  * to Map a core principle of Clean Architecture: Separation of Concerns.

@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.review.moviesappreview.BuildConfig
 import edu.review.moviesappreview.data.repository.system.MoviesNotifierRepository
-import edu.review.moviesappreview.domain.data.Movie
+import edu.review.moviesappreview.domain.model.Movie
 import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.domain.usecase.GetFastestMovieFeedUseCase
 import kotlinx.coroutines.flow.MutableStateFlow

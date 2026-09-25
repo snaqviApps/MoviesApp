@@ -1,4 +1,4 @@
-package edu.review.moviesappreview.domain
+package edu.review.moviesappreview.domain.model
 
 sealed interface PowerState {
     data object PluggedIn : PowerState

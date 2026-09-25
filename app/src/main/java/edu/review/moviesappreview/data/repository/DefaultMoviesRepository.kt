@@ -2,7 +2,7 @@ package edu.review.moviesappreview.data.repository
 
 import edu.review.moviesappreview.data.mapper.toDmain
 import edu.review.moviesappreview.data.repository.remote.MovieRemoteSource
-import edu.review.moviesappreview.domain.data.Movie
+import edu.review.moviesappreview.domain.model.Movie
 import edu.review.moviesappreview.domain.repository.MoviesRepository
 import edu.review.moviesappreview.util.toResult
 import javax.inject.Inject

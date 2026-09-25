@@ -2,7 +2,7 @@ package edu.review.moviesappreview.domain.usecase
 
 import android.util.Log
 import edu.review.moviesappreview.BuildConfig
-import edu.review.moviesappreview.domain.data.Movie
+import edu.review.moviesappreview.domain.model.Movie
 import edu.review.moviesappreview.domain.repository.MoviesRepository
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async

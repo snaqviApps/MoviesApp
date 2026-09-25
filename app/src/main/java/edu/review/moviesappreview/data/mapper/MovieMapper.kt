@@ -1,7 +1,7 @@
 package edu.review.moviesappreview.data.mapper
 
 import edu.review.moviesappreview.data.movies.Result as MovieDto
-import edu.review.moviesappreview.domain.data.Movie
+import edu.review.moviesappreview.domain.model.Movie
 
 fun MovieDto.toDmain() : Movie {
     return Movie(

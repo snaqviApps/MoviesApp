@@ -1,6 +1,6 @@
 package edu.review.moviesappreview.domain.repository
 
-import edu.review.moviesappreview.domain.data.Movie
+import edu.review.moviesappreview.domain.model.Movie
 
 
 /**

@@ -3,7 +3,7 @@ package edu.review.moviesappreview.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.review.moviesappreview.domain.PowerState
+import edu.review.moviesappreview.domain.model.PowerState
 import edu.review.moviesappreview.domain.repository.PowerRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

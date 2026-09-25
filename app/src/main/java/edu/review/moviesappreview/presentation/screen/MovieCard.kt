@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import edu.review.moviesappreview.R
-import edu.review.moviesappreview.domain.data.Movie
+import edu.review.moviesappreview.domain.model.Movie
 import edu.review.moviesappreview.presentation.MoviesUIState
 import edu.review.moviesappreview.util.imageUrl
 

@@ -11,7 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.review.moviesappreview.domain.PowerState
+import edu.review.moviesappreview.domain.model.PowerState
 import edu.review.moviesappreview.presentation.viewmodel.PowerViewModel
 import edu.review.moviesappreview.util.createNotificationChannelsAndSetupNotifications
 

@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import edu.review.moviesappreview.domain.PowerState
+import edu.review.moviesappreview.domain.model.PowerState
 import edu.review.moviesappreview.domain.repository.PowerRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
