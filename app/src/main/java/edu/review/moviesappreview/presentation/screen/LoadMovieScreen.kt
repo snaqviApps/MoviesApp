@@ -42,89 +42,89 @@ fun LoadMovieScreen(
                     fontFamily = FontFamily.Default
                 )
             )
-        }
-    ) { scaffoldPadding ->
-        Column(
-            modifier = Modifier
-                .padding(
-                    top = scaffoldPadding.calculateTopPadding() - 28.dp,
-                    bottom = scaffoldPadding.calculateBottomPadding()
-                ),
-        ) {
-            Card(
+        },
+        content = { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(2.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                    .padding(
+                        top = innerPadding.calculateTopPadding() - 28.dp,
+                        bottom = innerPadding.calculateBottomPadding()
+                    ),
             ) {
-                Box(
+                Card(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                        .fillMaxSize()
+                        .padding(2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
 //            contentAlignment = Alignment.CenterStart
 
-                ) {
-                    if (viewModel.showMovies) {
-                        onMovieView(viewModel.showMovies)
-                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 18.dp),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Spacer(modifier = Modifier.size(2.dp))
-                    Button(
-                        onClick = { viewModel.enableMoviesDataFetching("top_rated") },
-                        modifier = Modifier.weight(0.33f)
-
                     ) {
-                        Text(text = "Top Rated")
+                        if (viewModel.showMovies) {
+                            onMovieView(viewModel.showMovies)
+                        }
                     }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Button(
-                        onClick = { viewModel.enableMoviesDataFetching("now_playing") },
-                        modifier = Modifier.weight(0.33f)
-                    ) {
-                        Text(text = "Now Playing")
-                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 6.dp, end = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = { viewModel.enableMoviesDataFetching("popular") },
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                            .padding(start = 16.dp, end = 18.dp),
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        Text("Popular")
+                        Spacer(modifier = Modifier.size(2.dp))
+                        Button(
+                            onClick = { viewModel.enableMoviesDataFetching("top_rated") },
+                            modifier = Modifier.weight(0.33f)
+
+                        ) {
+                            Text(text = "Top Rated")
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Button(
+                            onClick = { viewModel.enableMoviesDataFetching("now_playing") },
+                            modifier = Modifier.weight(0.33f)
+                        ) {
+                            Text(text = "Now Playing")
+                        }
                     }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end=16.dp, bottom = 8.dp),
-                ) {
-                    Button(
-                        onClick = { viewModel.enableExoPlayerDefaults() },
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            .fillMaxWidth()
+                            .padding(start = 6.dp, end = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Launch ExoPlayer")
+                        Button(
+                            onClick = { viewModel.enableMoviesDataFetching("popular") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        ) {
+                            Text("Popular")
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                    ) {
+                        Button(
+                            onClick = { viewModel.enableExoPlayerDefaults() },
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Launch ExoPlayer")
+                        }
                     }
                 }
             }
-
         }
+    )
 
-    }
 }
 
 @Preview(showBackground = true)

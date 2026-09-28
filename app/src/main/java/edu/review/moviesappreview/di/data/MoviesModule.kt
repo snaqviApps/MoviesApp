@@ -5,7 +5,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import edu.review.moviesappreview.data.movies.Movies
 import edu.review.moviesappreview.data.repository.DefaultMoviesRepository
 import edu.review.moviesappreview.domain.repository.MoviesRepository
 import edu.review.moviesappreview.data.repository.remote.MovieRemoteSource
@@ -23,7 +22,7 @@ object MoviesNetworkModule {
 
     @Provides
     @Singleton
-    fun providesBaseUrl(): String = "https://api.themoviedb.org/3/movie/"
+    fun providesBaseUrl() : String = "https://api.themoviedb.org/3/movie/"
 
     @Singleton
     @Provides

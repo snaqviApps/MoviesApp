@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MoviesViewModel @Inject constructor (
     private val moviesNotifier: MoviesNotifierRepository,
-    private val getFastestMovieFeedUseCase: GetFastestMovieFeedUseCase,     // n/w data feed
+    private val getFastestMovieFeedUseCase: GetFastestMovieFeedUseCase     // n/w data feed
 //    private val getLocalDBMoviesAddUseCase: GetLocalDBMoviesAddUseCase,     // local db data feed
 
 ) : ViewModel() {
@@ -41,7 +41,6 @@ class MoviesViewModel @Inject constructor (
     }
 
     fun fetchPopularOrTopRatedMovies(endPoint: String) {
-
         _moviesState.value = MoviesUIState.Loading
         viewModelScope.launch {
             if (!showMovies) return@launch
@@ -62,7 +61,6 @@ class MoviesViewModel @Inject constructor (
                 _moviesState.value = MoviesUIState.Error("Error fetching movies: ${exception.message}")
             }
         }
-
     }
 
     fun enableMoviesDataFetching(endPoint: String): String {

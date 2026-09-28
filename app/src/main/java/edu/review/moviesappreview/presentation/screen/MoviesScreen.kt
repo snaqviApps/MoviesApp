@@ -1,6 +1,8 @@
 package edu.review.moviesappreview.presentation.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,7 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.review.moviesappreview.presentation.MoviesUIState
@@ -38,7 +46,8 @@ fun MoviesScreen(
                 is MoviesUIState.Success -> {
                     MovieCard(
                         // FIX 2: Use a clean, fresh Modifier here so it fills the Box perfectly!
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
                             .padding(innerPadding),
                         mState = mState
                     )
@@ -62,12 +71,50 @@ fun MoviesScreen(
                         }
                     )
                 }
+
                 is MoviesUIState.Error -> {
-                    Text(
-                        text = mState.message,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    Box(
+                        modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    ) {
+                        Column(
+                            modifier
+                                .fillMaxWidth()
+                                .padding(innerPadding),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(modifier = Modifier.fillMaxSize(),
+                                text = buildAnnotatedString {
+                                    withStyle(
+                                        style = SpanStyle(
+                                            color = Color.Red,
+                                            fontSize = 32.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    ) {
+                                        append("Error:\n\n")
+                                    }
+                                    if (mState.message.contains("api.themoviedb.org")) {
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = Color.Blue,
+                                                fontSize = 24.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        ) {
+                                            append("remote Host is not reachable")
+                                        }
+                                    } else {
+                                        append(mState.message)
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
+
                 is MoviesUIState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxWidth(),

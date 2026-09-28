@@ -20,7 +20,6 @@ class GetFastestMovieFeedUseCase @Inject constructor(
     ): Result<Pair<List<Movie>, String>> = coroutineScope {
 
         val startTime = System.currentTimeMillis()
-//        val popularDeferred: Deferred<Result<Movies>> = async {
         val popularDeferred: Deferred<Result<List<Movie>>> = async {
             moviesRepository.getMovies(
                 defaultCategory = defaultCategory,
